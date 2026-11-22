@@ -11,7 +11,7 @@ export const useModelFormSchemas = (
   credential?: Credential,
   model?: CustomModelCredential,
 ) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['plugin'])
   const { provider_credential_schema, supported_model_types, model_credential_schema } = provider
   const formSchemas = useMemo(() => {
     const schemas = providerFormSchemaPredefined
@@ -59,19 +59,9 @@ export const useModelFormSchemas = (
     return [modelNameSchema, modelTypeSchema]
   }, [supported_model_types, model_credential_schema?.model, providerFormSchemaPredefined])
 
-  const modelNameAndTypeFormValues = useMemo(() => {
-    let result = {}
-    if (providerFormSchemaPredefined) return result
-
-    if (model) result = { ...result, __model_name: model?.model, __model_type: model?.model_type }
-
-    return result
-  }, [model, providerFormSchemaPredefined])
-
   return {
     formSchemas: formSchemasWithAuthorizationName,
     formValues,
     modelNameAndTypeFormSchemas,
-    modelNameAndTypeFormValues,
   }
 }

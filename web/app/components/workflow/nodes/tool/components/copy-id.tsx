@@ -13,7 +13,7 @@ type Props = Readonly<{
 const prefixEmbedded = 'overview.appInfo.embedded'
 
 const CopyFeedbackNew = ({ content }: Props) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['appOverview'])
   const [isCopied, setIsCopied] = useState<boolean>(false)
 
   const onClickCopy = debounce(() => {
@@ -37,7 +37,7 @@ const CopyFeedbackNew = ({ content }: Props) => {
             <button
               type="button"
               aria-label={tooltip}
-              className="group/copy flex w-full items-center gap-0.5 text-left"
+              className="group/copy flex w-full items-center gap-0.5 text-start"
               onClick={(event) => {
                 event.stopPropagation()
                 onClickCopy()

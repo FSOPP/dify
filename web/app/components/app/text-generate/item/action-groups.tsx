@@ -23,7 +23,6 @@ type GenerationActionGroupsProps = {
   currentTab: string
   depth: number
   feedback?: FeedbackType
-  hideLogAction?: boolean
   isError: boolean
   isInWebApp: boolean
   isResponding?: boolean
@@ -33,7 +32,7 @@ type GenerationActionGroupsProps = {
   moreLikeThis?: boolean
   onFeedback?: (feedback: FeedbackType) => void
   onMoreLikeThis: () => void
-  onOpenLogModal: () => void
+  onOpenLog?: () => void
   onRetry: () => void
   onSave?: (messageId: string) => void
   supportFeedback?: boolean
@@ -47,7 +46,6 @@ const GenerationActionGroups: FC<GenerationActionGroupsProps> = ({
   currentTab,
   depth,
   feedback,
-  hideLogAction,
   isError,
   isInWebApp,
   isResponding,
@@ -57,35 +55,35 @@ const GenerationActionGroups: FC<GenerationActionGroupsProps> = ({
   moreLikeThis,
   onFeedback,
   onMoreLikeThis,
-  onOpenLogModal,
+  onOpenLog,
   onRetry,
   onSave,
   supportFeedback,
   voice,
   workflowProcessData,
 }) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['appDebug', 'common', 'share'])
   const isTryApp = appSourceType === AppSourceTypeEnum.tryApp
   const showCopyAction = (currentTab === 'RESULT' && workflowProcessData?.resultText) || !isWorkflow
 
   return (
     <>
-      {!hideLogAction &&
+      {onOpenLog &&
         !isInWebApp &&
         appSourceType !== AppSourceTypeEnum.installedApp &&
         !isResponding && (
-          <div className="ml-1 flex items-center gap-0.5 rounded-[10px] border-[0.5px] border-components-actionbar-border bg-components-actionbar-bg p-0.5 shadow-md backdrop-blur-xs">
+          <div className="ms-1 flex items-center gap-0.5 rounded-[10px] border-[0.5px] border-components-actionbar-border bg-components-actionbar-bg p-0.5 shadow-md backdrop-blur-xs">
             <IconButton
               aria-label={t(($) => $['operation.log'], { ns: 'common' })}
               disabled={isError || !messageId}
               title={t(($) => $['operation.log'], { ns: 'common' })}
-              onClick={onOpenLogModal}
+              onClick={onOpenLog}
             >
               <span aria-hidden="true" className="i-ri-file-list-3-line size-4" />
             </IconButton>
           </div>
         )}
-      <div className="ml-1 flex items-center gap-0.5 rounded-[10px] border-[0.5px] border-components-actionbar-border bg-components-actionbar-bg p-0.5 shadow-md backdrop-blur-xs">
+      <div className="ms-1 flex items-center gap-0.5 rounded-[10px] border-[0.5px] border-components-actionbar-border bg-components-actionbar-bg p-0.5 shadow-md backdrop-blur-xs">
         {moreLikeThis && !isTryApp && (
           <IconButton
             aria-label={t(($) => $['feature.moreLikeThis.title'], { ns: 'appDebug' })}
@@ -135,7 +133,7 @@ const GenerationActionGroups: FC<GenerationActionGroupsProps> = ({
         )}
       </div>
       {(supportFeedback || isInWebApp) && !isWorkflow && !isTryApp && !isError && messageId && (
-        <div className="ml-1 flex items-center gap-0.5 rounded-[10px] border-[0.5px] border-components-actionbar-border bg-components-actionbar-bg p-0.5 shadow-md backdrop-blur-xs">
+        <div className="ms-1 flex items-center gap-0.5 rounded-[10px] border-[0.5px] border-components-actionbar-border bg-components-actionbar-bg p-0.5 shadow-md backdrop-blur-xs">
           {!feedback?.rating && (
             <>
               <Toggle

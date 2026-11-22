@@ -1,17 +1,25 @@
 'use client'
+import type { DatasetDetailWithPartialMembersResponse } from '@dify/contracts/api/console/datasets/types.gen'
 import { Button } from '@langgenius/dify-ui/button'
+import { Separator } from '@langgenius/dify-ui/separator'
 import { useTranslation } from 'react-i18next'
-import Divider from '@/app/components/base/divider'
+import { toast } from '@/app/notifications'
+import { useDatasetDetailContextWithSelector } from '@/context/dataset-detail'
+import { FileScanSetting } from '@/features/file-scan/file-scan-setting'
+import { useFileScanPolicyController } from '@/features/file-scan/use-file-scan-policy'
 import BasicInfoSection from './components/basic-info-section'
 import ExternalKnowledgeSection from './components/external-knowledge-section'
 import IndexingSection from './components/indexing-section'
 import { useFormState } from './hooks/use-form-state'
 
-const Form = () => {
-  const { t } = useTranslation()
+const DatasetSettingsForm = ({
+  currentDataset,
+}: {
+  currentDataset: DatasetDetailWithPartialMembersResponse
+}) => {
+  const { t } = useTranslation(['datasetSettings'])
+  const { t: tFileScan } = useTranslation(['fileScan'])
   const {
-    // Context values
-    currentDataset,
     canEditSettings,
 
     // Loading state
@@ -25,9 +33,6 @@ const Form = () => {
 
     // Icon
     iconInfo,
-    showAppIconPicker,
-    setShowAppIconPicker,
-    handleOpenAppIconPicker,
     handleSelectAppIcon,
 
     // Permission
@@ -63,13 +68,34 @@ const Form = () => {
 
     // Actions
     handleSave,
-  } = useFormState()
+  } = useFormState(currentDataset)
 
   const isExternalProvider = currentDataset?.provider === 'external'
   const readonly = !canEditSettings
+  const fileScan = useFileScanPolicyController({
+    // An external knowledge base stores no uploaded files, so there is nothing to scan.
+    active: !isExternalProvider,
+    product: 'dataset',
+    readonly,
+    resourceId: currentDataset.id,
+  })
+
+  const saveAll = async () => {
+    // The scan policy has its own endpoint; it goes first so a rejected policy stops the save.
+    const fileScanResult = await fileScan.save()
+    if (fileScanResult === 'invalid') {
+      toast.error(tFileScan(($) => $['policy.scannerRequired']))
+      return
+    }
+    if (fileScanResult === 'failed') {
+      toast.error(tFileScan(($) => $['policy.saveFailed']))
+      return
+    }
+    await handleSave()
+  }
 
   return (
-    <div className="flex w-full flex-col gap-y-4 px-20 py-8 sm:w-240">
+    <div className="flex w-full max-w-240 flex-col gap-y-4 px-4 py-8 @3xl/settings:px-20">
       <BasicInfoSection
         currentDataset={currentDataset}
         name={name}
@@ -77,9 +103,6 @@ const Form = () => {
         description={description}
         setDescription={setDescription}
         iconInfo={iconInfo}
-        showAppIconPicker={showAppIconPicker}
-        setShowAppIconPicker={setShowAppIconPicker}
-        handleOpenAppIconPicker={handleOpenAppIconPicker}
         handleSelectAppIcon={handleSelectAppIcon}
         permission={permission}
         setPermission={setPermission}
@@ -117,18 +140,25 @@ const Form = () => {
         />
       )}
 
-      <Divider type="horizontal" className="my-1 h-px bg-divider-subtle" />
+      <Separator decorative orientation="horizontal" className="my-1 bg-divider-subtle" />
+
+      {fileScan.active && (
+        <>
+          <FileScanSetting controller={fileScan} />
+          <Separator decorative orientation="horizontal" className="my-1 bg-divider-subtle" />
+        </>
+      )}
 
       {/* Save Button */}
       <div className="flex gap-x-1">
-        <div className="flex h-7 w-45 shrink-0 items-center pt-1" />
+        <div className="hidden h-7 w-45 shrink-0 items-center pt-1 @3xl/settings:flex" />
         <div className="grow">
           <Button
             className="min-w-24"
             variant="primary"
-            loading={loading}
+            loading={loading || fileScan.isSaving}
             disabled={readonly}
-            onClick={handleSave}
+            onClick={() => void saveAll()}
           >
             {t(($) => $['form.save'], { ns: 'datasetSettings' })}
           </Button>
@@ -136,6 +166,12 @@ const Form = () => {
       </div>
     </div>
   )
+}
+
+const Form = () => {
+  const currentDataset = useDatasetDetailContextWithSelector((state) => state.dataset)
+  if (!currentDataset) return null
+  return <DatasetSettingsForm key={currentDataset.id} currentDataset={currentDataset} />
 }
 
 export default Form

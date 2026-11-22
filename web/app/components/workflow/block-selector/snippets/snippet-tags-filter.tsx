@@ -16,8 +16,7 @@ type SnippetTagsFilterProps = {
 }
 
 const SnippetTagsFilter = ({ embedded = false, value, onChange }: SnippetTagsFilterProps) => {
-  const { t } = useTranslation()
-  const [open, setOpen] = useState(false)
+  const { t } = useTranslation(['common', 'pluginTags'])
   const [searchText, setSearchText] = useState('')
 
   const { data: tagList = [] } = useQuery(
@@ -46,12 +45,11 @@ const SnippetTagsFilter = ({ embedded = false, value, onChange }: SnippetTagsFil
     ? selectedTags.map((tag) => tag.name).join(', ')
     : t(($) => $['tag.placeholder'], { ns: 'common' })
   const handleOpenChange = (nextOpen: boolean) => {
-    setOpen(nextOpen)
     if (!nextOpen) setSearchText('')
   }
 
   return (
-    <Popover open={open} onOpenChange={handleOpenChange}>
+    <Popover onOpenChange={handleOpenChange}>
       <PopoverTrigger
         render={
           <Button
@@ -61,12 +59,12 @@ const SnippetTagsFilter = ({ embedded = false, value, onChange }: SnippetTagsFil
             className={cn(
               'relative text-text-tertiary select-none focus-visible:ring-inset',
               embedded
-                ? 'mr-1 h-7 rounded-md'
+                ? 'me-1 h-7 rounded-md'
                 : 'h-8 min-w-8 rounded-lg border-[0.5px] border-components-panel-border bg-components-input-bg-normal px-2',
               embedded && !value.length && 'size-7 min-h-0 p-0',
               embedded &&
                 value.length > 0 &&
-                'border-[0.5px] border-components-button-secondary-border bg-components-button-secondary-bg py-0.5 pr-1.5 pl-1 shadow-xs shadow-shadow-shadow-3',
+                'border-[0.5px] border-components-button-secondary-border bg-components-button-secondary-bg py-0.5 ps-1 pe-1.5 shadow-xs shadow-shadow-shadow-3',
               !embedded && 'hover:bg-components-input-bg-hover',
               embedded &&
                 !value.length &&
@@ -87,7 +85,7 @@ const SnippetTagsFilter = ({ embedded = false, value, onChange }: SnippetTagsFil
         }
       />
       <PopoverContent
-        placement="bottom-end"
+        align="end"
         sideOffset={6}
         className="w-60 rounded-xl border-[0.5px] border-components-panel-border bg-components-panel-bg-blur p-0 shadow-lg backdrop-blur-xs"
       >
@@ -97,13 +95,13 @@ const SnippetTagsFilter = ({ embedded = false, value, onChange }: SnippetTagsFil
             <InputGroupInput
               type="search"
               name="tag-query"
-              aria-label={t(($) => $.searchTags, { ns: 'pluginTags' }) || ''}
+              aria-label={t(($) => $.searchTags, { ns: 'pluginTags' })}
               autoComplete="off"
               enterKeyHint="search"
               className="[&::-webkit-search-cancel-button]:appearance-none [&::-webkit-search-decoration]:appearance-none"
               value={searchText}
               onValueChange={setSearchText}
-              placeholder={t(($) => $.searchTags, { ns: 'pluginTags' }) || ''}
+              placeholder={t(($) => $.searchTags, { ns: 'pluginTags' })}
             />
             <InputGroupAddon className="ps-1.75 pe-0.75">
               <span
@@ -124,7 +122,7 @@ const SnippetTagsFilter = ({ embedded = false, value, onChange }: SnippetTagsFil
               key={tag.id}
               className="flex h-7 cursor-pointer items-center rounded-lg px-2 py-1.5 select-none hover:bg-state-base-hover"
             >
-              <Checkbox className="mr-1" value={tag.id} />
+              <Checkbox className="me-1" value={tag.id} />
               <div className="px-1 system-sm-medium text-text-secondary">{tag.name}</div>
             </label>
           ))}

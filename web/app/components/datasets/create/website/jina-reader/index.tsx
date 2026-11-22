@@ -44,7 +44,7 @@ const JinaReader: FC<Props> = ({
   crawlOptions,
   onCrawlOptionsChange,
 }) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['common', 'datasetCreation'])
   const [step, setStep] = useState<Step>(Step.init)
   const [controlFoldOptions, setControlFoldOptions] = useState<number>(0)
   const [, setSettingsDestination] = useQueryState(settingsQueryParamName, settingsQueryParser)
@@ -125,10 +125,9 @@ const JinaReader: FC<Props> = ({
         await sleep(2500)
         return await waitForCrawlFinished(jobId)
       } catch (e: any) {
-        const errorBody = await e.json()
         return {
           isError: true,
-          errorMessage: errorBody.message,
+          errorMessage: e instanceof Error ? e.message : undefined,
           data: {
             data: [],
           },
@@ -212,7 +211,7 @@ const JinaReader: FC<Props> = ({
         </OptionsWrap>
 
         {!isInit && (
-          <div className="relative -left-4 mt-3 w-[calc(100%+32px)] rounded-b-xl">
+          <div className="relative -inset-s-4 mt-3 w-[calc(100%+32px)] rounded-b-xl">
             {isRunning && (
               <Crawling
                 className="mt-2"
@@ -224,7 +223,7 @@ const JinaReader: FC<Props> = ({
             )}
             {showError && (
               <ErrorMessage
-                className="rounded-b-xl"
+                className="mx-4 mt-2 mb-4"
                 title={t(($) => $[`${I18N_PREFIX}.exceptionErrorTitle`], { ns: 'datasetCreation' })}
                 errorMsg={crawlErrorMessage}
               />

@@ -3,6 +3,7 @@ import type { FieldState, FormSchema, TypeWithI18N } from '@/app/components/base
 import { cn } from '@langgenius/dify-ui/cn'
 import { Field, FieldItem, FieldLabel } from '@langgenius/dify-ui/field'
 import { Fieldset, FieldsetLegend } from '@langgenius/dify-ui/fieldset'
+import { Infotip, InfotipContent, InfotipTrigger } from '@langgenius/dify-ui/infotip'
 import { Input } from '@langgenius/dify-ui/input'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@langgenius/dify-ui/input-group'
 import { NumberField, NumberFieldGroup, NumberFieldInput } from '@langgenius/dify-ui/number-field'
@@ -17,20 +18,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@langgenius/dify-ui/select'
-import { useStore } from '@tanstack/react-form'
+import { useSelector } from '@tanstack/react-form'
 import { isValidElement, memo, useCallback, useId, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { CheckboxList } from '@/app/components/base/checkbox-list'
 import { CopyFeedback } from '@/app/components/base/copy-feedback'
 import { FormItemValidateStatusEnum, FormTypeEnum } from '@/app/components/base/form/types'
-import { Infotip } from '@/app/components/base/infotip'
 import { useRenderI18nObject } from '@/hooks/use-i18n'
 import { useTriggerPluginDynamicOptions } from '@/service/use-triggers'
 
 const getExtraProps = (type: FormTypeEnum) => {
   switch (type) {
     case FormTypeEnum.secretInput:
-      return { type: 'password', autoComplete: 'new-password' }
+      return { type: 'password', autoComplete: 'off' }
     default:
       return { type: 'text' }
   }
@@ -125,8 +125,15 @@ const BaseField = ({
   onChange,
   fieldState,
 }: BaseFieldProps) => {
+  const inputFieldTypes: readonly FormTypeEnum[] = [
+    FormTypeEnum.textInput,
+    FormTypeEnum.secretInput,
+    FormTypeEnum.textNumber,
+  ]
+  const textFieldTypes: readonly FormTypeEnum[] = [FormTypeEnum.textInput, FormTypeEnum.secretInput]
+
   const renderI18nObject = useRenderI18nObject()
-  const { t } = useTranslation()
+  const { t } = useTranslation(['common'])
   const {
     name,
     label,
@@ -149,7 +156,7 @@ const BaseField = ({
   const labelId = `${controlId}-label`
   const descriptionId = `${controlId}-description`
   const messageId = `${controlId}-message`
-  const meta = useStore(field.form.store, (state) => state.fieldMeta[field.name])
+  const meta = useSelector(field.form.store, (state) => state.fieldMeta[field.name])
   // Nonempty external errors take priority; clearing them restores client validation.
   const errors = fieldState?.errors?.length ? fieldState.errors : meta?.isTouched ? meta.errors : []
   const validateStatus =
@@ -170,11 +177,8 @@ const BaseField = ({
   }
   const isDynamicSelect = formItemType === FormTypeEnum.dynamicSelect
   const isSelect = formItemType === FormTypeEnum.select || isDynamicSelect
-  const isSingleControl = [
-    FormTypeEnum.textInput,
-    FormTypeEnum.secretInput,
-    FormTypeEnum.textNumber,
-  ].includes(formItemType)
+  const isSingleControl = inputFieldTypes.includes(formItemType)
+  const hasCustomLabel = isValidElement(label)
 
   const [
     translatedLabel,
@@ -200,7 +204,7 @@ const BaseField = ({
     return Array.from(variables)
   }, [options])
 
-  const watchedValues = useStore(field.form.store, (s) => {
+  const watchedValues = useSelector(field.form.store, (s) => {
     const result: Record<string, unknown> = {}
     for (const variable of watchedVariables) result[variable] = s.values[variable]
 
@@ -226,7 +230,7 @@ const BaseField = ({
     )
   }, [options, renderI18nObject, watchedValues])
 
-  const value = useStore(field.form.store, (s) => s.values[field.name])
+  const value = useSelector(field.form.store, (s) => s.values[field.name])
   const stringValue = typeof value === 'string' ? value : undefined
   const booleanValue = typeof value === 'boolean' ? value : undefined
 
@@ -291,33 +295,40 @@ const BaseField = ({
       <div className={cn(fieldClassName)}>
         <div className={cn(labelClassName, formLabelClassName)}>
           {isSelect ? (
-            <SelectLabel className="inline p-0 text-inherit [font:inherit]">
-              {translatedLabel || name}
+            <SelectLabel
+              className={cn('inline p-0 text-inherit [font:inherit]', hasCustomLabel && 'w-full')}
+            >
+              <span id={labelId}>{translatedLabel || name}</span>
             </SelectLabel>
           ) : isSingleControl ? (
             <label
               id={labelId}
               htmlFor={controlId}
-              className={cn(isValidElement(label) && 'w-full')}
+              className={hasCustomLabel ? 'w-full' : undefined}
             >
               {translatedLabel || name}
             </label>
           ) : (
-            <span id={labelId}>{translatedLabel || name}</span>
+            <span id={labelId} className={hasCustomLabel ? 'w-full' : undefined}>
+              {translatedLabel || name}
+            </span>
           )}
-          {required && !isValidElement(label) && (
-            <span aria-hidden="true" className="ml-1 text-text-destructive-secondary">
+          {required && !hasCustomLabel && (
+            <span aria-hidden="true" className="ms-1 text-text-destructive-secondary">
               *
             </span>
           )}
           {translatedTooltip && (
-            <Infotip aria-label={translatedTooltip} className="ml-0.5" popupClassName="w-[200px]">
-              {translatedTooltip}
+            <Infotip>
+              <InfotipTrigger aria-labelledby={labelId} className="ms-0.5" />
+              <InfotipContent aria-labelledby={labelId} className="w-50">
+                {translatedTooltip}
+              </InfotipContent>
             </Infotip>
           )}
         </div>
         <div className={cn(inputContainerClassName)} data-form-field={field.name}>
-          {[FormTypeEnum.textInput, FormTypeEnum.secretInput].includes(formItemType) && (
+          {textFieldTypes.includes(formItemType) && (
             <Field
               className="contents"
               invalid={validateStatus === FormItemValidateStatusEnum.Error}
@@ -331,11 +342,8 @@ const BaseField = ({
                   )}
                 >
                   <InputGroupInput {...textInputProps} />
-                  <InputGroupAddon align="inline-end" className="pe-0">
-                    <CopyFeedback
-                      content={stringValue ?? ''}
-                      className="size-7 hover:bg-transparent"
-                    />
+                  <InputGroupAddon align="inline-end" className="pe-0.5">
+                    <CopyFeedback content={stringValue ?? ''} className="hover:bg-transparent" />
                   </InputGroupAddon>
                 </InputGroup>
               ) : (
@@ -379,7 +387,7 @@ const BaseField = ({
                   {showCopy && (
                     <CopyFeedback
                       content={value == null ? '' : String(value)}
-                      className="size-7 shrink-0 hover:bg-transparent"
+                      className="me-0.5 shrink-0 self-center hover:bg-transparent"
                     />
                   )}
                 </NumberFieldGroup>
@@ -388,7 +396,7 @@ const BaseField = ({
           )}
           {isSelect && (
             <>
-              <SelectTrigger id={controlId} {...controlProps} className="px-2">
+              <SelectTrigger id={controlId} {...controlProps}>
                 {multiple ? (
                   <SelectValue<string, true> placeholder={selectPlaceholder}>
                     {(selectedValue) =>
@@ -435,6 +443,7 @@ const BaseField = ({
               {...controlProps}
               aria-labelledby={labelId}
               name={field.name}
+              disabled={disabled}
               title={name}
               value={value}
               onChange={(v) => field.handleChange(v)}
@@ -471,7 +480,7 @@ const BaseField = ({
                       )}
                     >
                       {formSchema.showRadioUI && (
-                        <Radio className="mr-2" value={option.value} disabled={disabled} />
+                        <Radio className="me-2" value={option.value} disabled={disabled} />
                       )}
                       {!formSchema.showRadioUI && (
                         <Radio className="sr-only" value={option.value} disabled={disabled} />
@@ -498,14 +507,14 @@ const BaseField = ({
               >
                 <FieldsetLegend className="sr-only">{translatedLabel || name}</FieldsetLegend>
                 <FieldItem>
-                  <FieldLabel className="flex items-center gap-1.5 system-sm-regular text-text-secondary">
-                    <Radio value={true} />
+                  <FieldLabel className="flex cursor-pointer items-center gap-1.5 system-sm-regular text-text-secondary">
+                    <Radio value={true} disabled={disabled} />
                     True
                   </FieldLabel>
                 </FieldItem>
                 <FieldItem>
-                  <FieldLabel className="flex items-center gap-1.5 system-sm-regular text-text-secondary">
-                    <Radio value={false} />
+                  <FieldLabel className="flex cursor-pointer items-center gap-1.5 system-sm-regular text-text-secondary">
+                    <Radio value={false} disabled={disabled} />
                     False
                   </FieldLabel>
                 </FieldItem>
@@ -539,7 +548,7 @@ const BaseField = ({
           target="_blank"
         >
           <span className="break-all">{translatedHelp}</span>
-          <div className="ml-1 i-ri-external-link-line size-3 shrink-0" />
+          <div className="ms-1 i-ri-external-link-line size-3 shrink-0" />
         </a>
       )}
     </>

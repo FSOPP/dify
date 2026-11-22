@@ -6,6 +6,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@langgenius/dify-ui/pop
 import { cloneElement, memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import BlockIcon from '@/app/components/workflow/block-icon'
+import { hasAgentV2OutputRoutes } from '@/app/components/workflow/nodes/agent-v2/types'
 import { BlockEnum } from '@/app/components/workflow/types'
 import { hasErrorHandleNode } from '@/app/components/workflow/utils'
 import ErrorHandleOnNode from '../error-handle-on-node'
@@ -18,7 +19,7 @@ type NodeCardProps = NodeProps & {
 }
 
 const BaseCard = ({ id, data, children }: NodeCardProps) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['workflow', 'workflowLogic'])
 
   return (
     <div
@@ -56,7 +57,8 @@ const BaseCard = ({ id, data, children }: NodeCardProps) => {
           />
           {data.type !== BlockEnum.IfElse &&
             data.type !== BlockEnum.QuestionClassifier &&
-            data.type !== BlockEnum.HumanInput && (
+            data.type !== BlockEnum.HumanInput &&
+            !hasAgentV2OutputRoutes(data) && (
               <NodeSourceHandle
                 id={id}
                 data={data}
@@ -64,10 +66,10 @@ const BaseCard = ({ id, data, children }: NodeCardProps) => {
                 handleId="source"
               />
             )}
-          <BlockIcon className="mr-2 shrink-0" type={data.type} size="md" />
+          <BlockIcon className="me-2 shrink-0" type={data.type} size="md" />
           <div
             title={data.title}
-            className="mr-1 flex grow items-center truncate system-sm-semibold-uppercase text-text-primary"
+            className="me-1 flex grow items-center truncate system-sm-semibold-uppercase text-text-primary"
           >
             <div>{data.title}</div>
             {data.type === BlockEnum.Iteration && (data as IterationNodeType).is_parallel && (
@@ -77,13 +79,15 @@ const BaseCard = ({ id, data, children }: NodeCardProps) => {
                   aria-label={t(($) => $['nodes.iteration.parallelModeEnableTitle'], {
                     ns: 'workflow',
                   })}
-                  className="ml-1 flex items-center justify-center rounded-[5px] border border-text-warning bg-transparent px-1.25 py-0.75 system-2xs-medium-uppercase text-text-warning"
+                  className="ms-1 flex items-center justify-center rounded-[5px] border border-text-warning bg-transparent px-1.25 py-0.75 system-2xs-medium-uppercase text-text-warning"
                 >
                   {t(($) => $['nodes.iteration.parallelModeUpper'], { ns: 'workflow' })}
                 </PopoverTrigger>
                 <PopoverContent className="w-45 px-3 py-2 system-xs-regular text-text-tertiary">
                   <div className="font-extrabold">
-                    {t(($) => $['nodes.iteration.parallelModeEnableTitle'], { ns: 'workflow' })}
+                    {t(($) => $['nodes.iteration.parallelModeEnableTitle'], {
+                      ns: 'workflow',
+                    })}
                   </div>
                   {t(($) => $['nodes.iteration.parallelModeEnableDesc'], { ns: 'workflow' })}
                 </PopoverContent>
@@ -96,7 +100,7 @@ const BaseCard = ({ id, data, children }: NodeCardProps) => {
           children &&
           cloneElement(children, { id, data })}
         {(data.type === BlockEnum.Iteration || data.type === BlockEnum.Loop) && children && (
-          <div className="h-[calc(100%-42px)] w-full grow pr-1 pb-1 pl-1">
+          <div className="h-[calc(100%-42px)] w-full grow ps-1 pe-1 pb-1">
             {cloneElement(children, { id, data })}
           </div>
         )}

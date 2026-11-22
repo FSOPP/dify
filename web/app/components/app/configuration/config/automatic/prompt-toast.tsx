@@ -11,7 +11,7 @@ type Props = Readonly<{
   className?: string
 }>
 const PromptToast = ({ message, className }: Props) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['appGeneration'])
   const [isFold, { toggle: toggleFold }] = useBoolean(false)
   // const message = `
   // list1list1list1list1list1list1list1list1list1list1list1list1list1list1list1list1list1list1list1list1list1list1list1list1list1list1list1list1list1list1
@@ -31,15 +31,15 @@ const PromptToast = ({ message, className }: Props) => {
   return (
     <div
       className={cn(
-        'rounded-xl border-[0.5px] border-components-panel-border bg-background-section-burn pl-4 shadow-xs',
+        'rounded-xl border-[0.5px] border-components-panel-border bg-background-section-burn ps-4 shadow-xs',
         className,
       )}
     >
-      <div className="my-3 flex h-4 items-center justify-between pr-3">
+      <div className="my-3 flex h-4 items-center justify-between pe-3">
         <div className="flex items-center space-x-1">
           <RiSparklingFill className="size-3.5 text-components-input-border-active-prompt-1" />
           <span className={cn(s.optimizationNoteText, 'system-xs-semibold-uppercase')}>
-            {t(($) => $['generate.optimizationNote'], { ns: 'appDebug' })}
+            {t(($) => $['generate.optimizationNote'], { ns: 'appGeneration' })}
           </span>
         </div>
         <RiArrowDownSLine
@@ -48,7 +48,7 @@ const PromptToast = ({ message, className }: Props) => {
         />
       </div>
       {!isFold && (
-        <div className="pr-4 pb-4">
+        <div className="pe-4 pb-4">
           <Markdown className="text-sm!" content={message} />
         </div>
       )}

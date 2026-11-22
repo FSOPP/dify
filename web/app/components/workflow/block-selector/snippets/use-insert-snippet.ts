@@ -13,7 +13,10 @@ import { CUSTOM_EDGE, NESTED_ELEMENT_Z_INDEX, NODE_WIDTH_X_OFFSET, X_OFFSET } fr
 import { useNodesSyncDraft } from '../../hooks/use-nodes-sync-draft'
 import { useWorkflowHistory, WorkflowHistoryEvent } from '../../hooks/use-workflow-history'
 import { getNodeUsedVars, updateNodeVars } from '../../nodes/_base/components/variable/utils'
+import { hasAgentV2OutputRoutes } from '../../nodes/agent-v2/types'
 import { AssignerNodeInputType } from '../../nodes/assigner/types'
+import { notifyHumanInputInsertionBlocked } from '../../nodes/human-input-v2/migration/insertion-feedback'
+import { getHumanInputNodesInsertionBlocker } from '../../nodes/human-input-v2/migration/policy'
 import { BlockEnum } from '../../types'
 import { getNodesConnectedSourceOrTargetHandleIdsMap } from '../../utils'
 
@@ -65,6 +68,7 @@ const canConnectFromSource = (node: Node) => {
   return (
     node.data.type !== BlockEnum.IfElse &&
     node.data.type !== BlockEnum.QuestionClassifier &&
+    !hasAgentV2OutputRoutes(node.data) &&
     node.data.type !== BlockEnum.HumanInput &&
     node.data.type !== BlockEnum.LoopEnd
   )
@@ -228,8 +232,9 @@ const remapSnippetGraph = (
   const offsetY = (insertAnchor?.y ?? (currentNodes.length ? currentMinY : 80)) - minRootY
 
   snippetNodes.forEach((node, index) => {
-    let nextId = `${node.id}-${Date.now()}-${index}`
-    while (existingIds.has(nextId)) nextId = `${nextId}-1`
+    // Keep IDs compatible with runtime variable templates, including on collisions.
+    let nextId = `${Date.now() + index}`
+    while (existingIds.has(nextId)) nextId = `${Number(nextId) + 1}`
     existingIds.add(nextId)
     idMapping.set(node.id, nextId)
   })
@@ -401,7 +406,8 @@ const createBoundaryEdges = ({
 }
 
 export const useInsertSnippet = () => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['snippet', 'workflow'])
+  const { t: workflowT } = useTranslation(['workflow'])
   const queryClient = useQueryClient()
   const store = useStoreApi()
   const { handleSyncWorkflowDraft } = useNodesSyncDraft()
@@ -413,6 +419,7 @@ export const useInsertSnippet = () => {
       try {
         const workflow = await queryClient.query(
           consoleQuery.snippets.bySnippetId.workflows.publish.get.queryOptions({
+            context: { silent: true },
             input: {
               params: { snippet_id: snippetId },
             },
@@ -424,6 +431,11 @@ export const useInsertSnippet = () => {
 
         const { getNodes, setNodes, edges, setEdges } = store.getState()
         const currentNodes = getNodes()
+        const insertionBlocker = getHumanInputNodesInsertionBlocker(currentNodes, snippetNodes)
+        if (insertionBlocker) {
+          notifyHumanInputInsertionBlocked(insertionBlocker, workflowT)
+          return false
+        }
         const remappedGraph = remapSnippetGraph(
           currentNodes,
           snippetNodes,
@@ -577,7 +589,15 @@ export const useInsertSnippet = () => {
         return false
       }
     },
-    [handleSyncWorkflowDraft, incrementSnippetUseCount, queryClient, saveStateToHistory, store, t],
+    [
+      handleSyncWorkflowDraft,
+      incrementSnippetUseCount,
+      queryClient,
+      saveStateToHistory,
+      store,
+      t,
+      workflowT,
+    ],
   )
 
   return {

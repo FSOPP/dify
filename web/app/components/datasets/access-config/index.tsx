@@ -30,7 +30,7 @@ type DatasetAccessConfigPageProps = {
 }
 
 const DatasetAccessConfigPage = ({ datasetId }: DatasetAccessConfigPageProps) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['permission', 'navigation'])
   const locale = useLocale()
   const language = useMemo(() => getAccessControlTemplateLanguage(locale), [locale])
   const [currentPage, setCurrentPage] = useState(1)
@@ -225,13 +225,13 @@ const DatasetAccessConfigPage = ({ datasetId }: DatasetAccessConfigPageProps) =>
     <div className="flex h-full min-h-0 flex-col overflow-hidden bg-background-default-subtle">
       <header className="flex min-h-15.5 shrink-0 flex-col justify-center px-6 py-3">
         <h1 className="system-xl-semibold text-text-primary">
-          {t(($) => $['settings.resourceAccess'], { ns: 'common' })}
+          {t(($) => $['settings.resourceAccess'], { ns: 'navigation' })}
         </h1>
         <p className="mt-0.5 system-sm-regular text-text-tertiary">
           {t(($) => $['accessRule.datasetDescription'], { ns: 'permission' })}
         </p>
       </header>
-      <div className="flex min-h-0 w-full max-w-240 flex-1 flex-col px-6 pt-8 pb-10 sm:pr-20 sm:pl-12.5">
+      <div className="flex min-h-0 w-full max-w-240 flex-1 flex-col px-6 pt-8 pb-10 sm:ps-12.5 sm:pe-20">
         <AccessRulesEditor
           className="min-h-0 w-full flex-1"
           rules={datasetAccessRules}

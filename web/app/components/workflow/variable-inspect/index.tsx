@@ -10,7 +10,7 @@ import { useStore } from '../store'
 import Panel from './panel'
 
 const VariableInspectPanel: FC = () => {
-  const { t } = useTranslation('workflow')
+  const { t } = useTranslation(['workflowDebug'])
   const panelId = useId()
   const showVariableInspectPanel = useStore((s) => s.showVariableInspectPanel)
   const workflowCanvasHeight = useStore((s) => s.workflowCanvasHeight)
@@ -56,9 +56,9 @@ const VariableInspectPanel: FC = () => {
         min={120}
         max={maxHeight}
         controls={panelId}
-        label={t(($) => $['debug.variableInspect.title'])}
+        label={t(($) => $['debug.variableInspect.title'], { ns: 'workflowDebug' })}
         onResize={(height) => handleResize(0, height)}
-        className="absolute -top-1 left-0 flex h-1 w-full cursor-row-resize items-center justify-center"
+        className="absolute inset-s-0 -top-1 flex h-1 w-full cursor-row-resize items-center justify-center"
       >
         <div className="h-0.5 w-10 rounded-xs bg-state-base-handle group-focus-visible/resize:w-full group-focus-visible/resize:bg-state-accent-solid hover:w-full hover:bg-state-accent-solid active:w-full active:bg-state-accent-solid"></div>
       </ResizeHandle>

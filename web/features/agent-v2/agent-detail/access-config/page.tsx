@@ -13,7 +13,7 @@ import { RESOURCE_ACCESS_SETTINGS_PAGE_SIZE } from '@/service/access-control/con
 import { consoleQuery } from '@/service/console'
 
 export function AgentAccessConfigPage({ agentId }: { agentId: string }) {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['common', 'permission', 'navigation'])
   const language = getAccessControlTemplateLanguage(useLocale())
   const { agentQuery, canAccessConfig } = useAgentPermissions(agentId)
   const [page, setPage] = useState(1)
@@ -102,13 +102,13 @@ export function AgentAccessConfigPage({ agentId }: { agentId: string }) {
     <div className="flex h-full min-h-0 flex-col overflow-hidden bg-background-default-subtle">
       <header className="flex min-h-15.5 shrink-0 flex-col justify-center px-6 py-3">
         <h1 className="system-xl-semibold text-text-primary">
-          {t(($) => $['settings.resourceAccess'], { ns: 'common' })}
+          {t(($) => $['settings.resourceAccess'], { ns: 'navigation' })}
         </h1>
         <p className="mt-0.5 system-sm-regular text-text-tertiary">
           {t(($) => $['accessRule.agentDescription'], { ns: 'permission' })}
         </p>
       </header>
-      <main className="flex min-h-0 w-full max-w-240 flex-1 flex-col px-6 pt-8 pb-10 sm:pr-20 sm:pl-12.5">
+      <main className="flex min-h-0 w-full max-w-240 flex-1 flex-col px-6 pt-8 pb-10 sm:ps-12.5 sm:pe-20">
         {error ? (
           <div role="alert" className="flex items-center justify-center gap-3 py-8">
             <span>{t(($) => $['api.actionFailed'], { ns: 'common' })}</span>

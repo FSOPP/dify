@@ -26,9 +26,9 @@ const WorkflowToolAction = ({
   published,
   onConfigure,
 }: WorkflowToolActionProps) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['appApi', 'workflow', 'navigation'])
   const disabledReason = disabled ? message : undefined
-  const workflowToolLabel = t(($) => $['common.workflowAsTool'], { ns: 'workflow' })
+  const workflowToolLabel = t(($) => $['common.workflowAsTool'], { ns: 'navigation' })
 
   if (!published || isLoading)
     return (
@@ -73,7 +73,7 @@ const WorkflowToolAction = ({
           <span className="i-ri-hammer-line size-4" />
         </span>
         <div className="min-w-0 flex-1">
-          <div className="flex min-h-7 items-center gap-2 pt-1 pr-1 pb-1">
+          <div className="flex min-h-7 items-center gap-2 pe-1 pt-1 pb-1">
             <span
               className="min-w-0 flex-1 truncate system-sm-medium text-text-secondary"
               title={workflowToolLabel}
@@ -83,7 +83,7 @@ const WorkflowToolAction = ({
             <WorkflowToolStateLabel label={stateLabel} outdated={outdated} />
           </div>
           {outdated && (
-            <p className="pr-4 pb-1 system-xs-regular text-text-warning">
+            <p className="pe-4 pb-1 system-xs-regular text-text-warning">
               {t(($) => $['common.workflowAsToolTip'], { ns: 'workflow' })}
             </p>
           )}

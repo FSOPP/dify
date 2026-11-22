@@ -31,7 +31,7 @@ function PluginTaskList({
   onClearErrors,
   onClearSingle,
 }: PluginTaskListProps) {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['plugin'])
   const language = useGetLanguage()
   const runningSectionTitle = t(($) => $['task.runningPlugins'], { ns: 'plugin' })
   const successSectionTitle = t(($) => $['task.successPlugins'], { ns: 'plugin' })
@@ -49,7 +49,7 @@ function PluginTaskList({
           className="max-h-105 overscroll-contain"
           role="region"
         >
-          <ScrollAreaContent style={{ minWidth: 0 }} className="w-full max-w-full pr-3">
+          <ScrollAreaContent style={{ minWidth: 0 }} className="w-full max-w-full pe-3">
             {runningPlugins.length > 0 && (
               <PluginSection
                 title={runningSectionTitle}

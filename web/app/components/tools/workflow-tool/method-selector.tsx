@@ -4,14 +4,13 @@ import { Popover, PopoverContent, PopoverTrigger } from '@langgenius/dify-ui/pop
 import { RiArrowDownSLine } from '@remixicon/react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Check } from '@/app/components/base/icons/src/vender/line/general'
 
 type MethodSelectorProps = {
   value?: string
   onChange: (v: string) => void
 }
 const MethodSelector: FC<MethodSelectorProps> = ({ value, onChange }) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['tools'])
   const [open, setOpen] = useState(false)
   const handleSelect = (value: string) => {
     onChange(value)
@@ -35,50 +34,56 @@ const MethodSelector: FC<MethodSelectorProps> = ({ value, onChange }) => {
                   ? t(($) => $['createTool.toolInput.methodParameter'], { ns: 'tools' })
                   : t(($) => $['createTool.toolInput.methodSetting'], { ns: 'tools' })}
               </div>
-              <div className="ml-1 shrink-0 text-text-secondary opacity-60">
+              <div className="ms-1 shrink-0 text-text-secondary opacity-60">
                 <RiArrowDownSLine className="size-4" />
               </div>
             </div>
           }
         />
-        <PopoverContent placement="bottom-start" sideOffset={4}>
+        <PopoverContent align="start" sideOffset={4}>
           <div className="relative w-[320px]">
             <div className="p-1">
               <button
                 type="button"
-                className="block w-full cursor-pointer rounded-lg border-none bg-transparent py-2.5 pr-2 pl-3 text-left hover:bg-components-panel-on-panel-item-bg-hover"
+                className="block w-full cursor-pointer rounded-lg border-none bg-transparent py-2.5 ps-3 pe-2 text-start hover:bg-components-panel-on-panel-item-bg-hover"
                 onClick={() => handleSelect('llm')}
               >
                 <div className="flex items-center gap-1">
                   <div className="size-4 shrink-0">
                     {value === 'llm' && (
-                      <Check className="size-4 shrink-0 text-text-accent" aria-hidden />
+                      <span
+                        aria-hidden
+                        className="i-custom-vender-line-general-check size-4 shrink-0 text-text-accent"
+                      />
                     )}
                   </div>
                   <div className="text-[13px] leading-4.5 font-medium text-text-secondary">
                     {t(($) => $['createTool.toolInput.methodParameter'], { ns: 'tools' })}
                   </div>
                 </div>
-                <div className="pl-5 text-[13px] leading-4.5 text-text-tertiary">
+                <div className="ps-5 text-[13px] leading-4.5 text-text-tertiary">
                   {t(($) => $['createTool.toolInput.methodParameterTip'], { ns: 'tools' })}
                 </div>
               </button>
               <button
                 type="button"
-                className="block w-full cursor-pointer rounded-lg border-none bg-transparent py-2.5 pr-2 pl-3 text-left hover:bg-components-panel-on-panel-item-bg-hover"
+                className="block w-full cursor-pointer rounded-lg border-none bg-transparent py-2.5 ps-3 pe-2 text-start hover:bg-components-panel-on-panel-item-bg-hover"
                 onClick={() => handleSelect('form')}
               >
                 <div className="flex items-center gap-1">
                   <div className="size-4 shrink-0">
                     {value === 'form' && (
-                      <Check className="size-4 shrink-0 text-text-accent" aria-hidden />
+                      <span
+                        aria-hidden
+                        className="i-custom-vender-line-general-check size-4 shrink-0 text-text-accent"
+                      />
                     )}
                   </div>
                   <div className="text-[13px] leading-4.5 font-medium text-text-secondary">
                     {t(($) => $['createTool.toolInput.methodSetting'], { ns: 'tools' })}
                   </div>
                 </div>
-                <div className="pl-5 text-[13px] leading-4.5 text-text-tertiary">
+                <div className="ps-5 text-[13px] leading-4.5 text-text-tertiary">
                   {t(($) => $['createTool.toolInput.methodSettingTip'], { ns: 'tools' })}
                 </div>
               </button>

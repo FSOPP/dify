@@ -10,7 +10,7 @@ type HelpLinkProps = {
   nodeType: BlockEnum
 }
 const HelpLink = ({ nodeType }: HelpLinkProps) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['common'])
   const link = useNodeHelpLink(nodeType)
 
   if (!link) return null
@@ -26,7 +26,7 @@ const HelpLink = ({ nodeType }: HelpLinkProps) => {
             href={link}
             target="_blank"
             rel="noopener noreferrer"
-            className={cn(iconButtonVariants({ size: 'md' }), 'mr-1')}
+            className={cn(iconButtonVariants({ size: 'md' }), 'me-1')}
           >
             <span aria-hidden className="i-ri-book-open-line size-4" />
           </a>

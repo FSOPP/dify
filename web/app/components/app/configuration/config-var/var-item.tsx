@@ -9,7 +9,6 @@ import * as React from 'react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import Badge from '@/app/components/base/badge'
-import { BracketsX as VarIcon } from '@/app/components/base/icons/src/vender/line/development'
 import IconTypeIcon from './input-type-icon'
 
 type ItemProps = {
@@ -37,29 +36,33 @@ const VarItem: FC<ItemProps> = ({
   canDrag,
   dragHandleProps,
 }) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['common'])
   const [isDeleting, setIsDeleting] = useState(false)
 
   return (
     <div
       className={cn(
-        'group relative mb-1 flex h-8.5 w-full items-center rounded-lg border-[0.5px] border-components-panel-border-subtle bg-components-panel-on-panel-item-bg pr-3 pl-2.5 shadow-xs last-of-type:mb-0 hover:bg-components-panel-on-panel-item-bg-hover hover:shadow-sm',
+        'group relative mb-1 flex h-8.5 w-full items-center rounded-lg border-[0.5px] border-components-panel-border-subtle bg-components-panel-on-panel-item-bg ps-2.5 pe-3 shadow-xs last-of-type:mb-0 hover:bg-components-panel-on-panel-item-bg-hover hover:shadow-sm',
         isDeleting && 'border-state-destructive-border hover:bg-state-destructive-hover',
         readonly && 'cursor-not-allowed',
         className,
       )}
     >
-      <VarIcon
+      <span
+        aria-hidden
         className={cn(
-          'mr-1 size-4 shrink-0 text-text-accent',
-          canDrag && 'group-focus-within:opacity-0 group-hover:opacity-0',
+          'i-custom-vender-line-development-brackets-x h-6 w-6',
+          cn(
+            'me-1 size-4 shrink-0 text-text-accent',
+            canDrag && 'group-focus-within:opacity-0 group-hover:opacity-0',
+          ),
         )}
       />
       {canDrag && (
         <IconButton
           {...dragHandleProps}
           aria-label={dragHandleProps?.['aria-label'] ?? name}
-          className="handle pointer-events-none absolute left-1.5 size-6 cursor-grab opacity-0 group-focus-within:pointer-events-auto group-focus-within:opacity-100 group-hover:pointer-events-auto group-hover:opacity-100 focus-visible:pointer-events-auto focus-visible:opacity-100 aria-pressed:bg-state-accent-hover"
+          className="handle pointer-events-none absolute inset-s-1.5 cursor-grab opacity-0 group-focus-within:pointer-events-auto group-focus-within:opacity-100 group-hover:pointer-events-auto group-hover:opacity-100 focus-visible:pointer-events-auto focus-visible:opacity-100 aria-pressed:bg-state-accent-hover"
         >
           <RiDraggable aria-hidden="true" className="size-4 text-text-tertiary" />
         </IconButton>
@@ -74,7 +77,7 @@ const VarItem: FC<ItemProps> = ({
       <div className="flex shrink-0 items-center">
         <div className="flex items-center">
           {required && <Badge text="required" />}
-          <span className="pr-1 pl-2 system-xs-regular text-text-tertiary">{type}</span>
+          <span className="ps-2 pe-1 system-xs-regular text-text-tertiary">{type}</span>
           <IconTypeIcon type={type as IInputTypeIconProps['type']} className="text-text-tertiary" />
         </div>
         {!readonly && (
@@ -82,7 +85,7 @@ const VarItem: FC<ItemProps> = ({
             <button
               type="button"
               aria-label={t(($) => $['operation.edit'], { ns: 'common' })}
-              className="mr-1 flex size-6 cursor-pointer items-center justify-center rounded-md border-none bg-transparent p-0 hover:bg-black/5 focus-visible:ring-1 focus-visible:ring-components-input-border-active focus-visible:outline-hidden"
+              className="me-1 flex size-6 cursor-pointer items-center justify-center rounded-md border-none bg-transparent p-0 hover:bg-black/5 focus-visible:ring-1 focus-visible:ring-components-input-border-active focus-visible:outline-hidden"
               onClick={onEdit}
             >
               <RiEditLine className="size-4 text-text-tertiary" aria-hidden="true" />

@@ -24,9 +24,7 @@ from models.model import AppMode
 
 class WorkflowAppLogQuery(BaseModel):
     keyword: str | None = Field(default=None, description="Search keyword for filtering logs")
-    status: WorkflowExecutionStatus | None = Field(
-        default=None, description="Execution status filter (succeeded, failed, stopped, partial-succeeded)"
-    )
+    status: WorkflowExecutionStatus | None = Field(default=None, description="Execution status filter")
     created_at__before: datetime | None = Field(default=None, description="Filter logs created before this timestamp")
     created_at__after: datetime | None = Field(default=None, description="Filter logs created after this timestamp")
     created_by_end_user_session_id: str | None = Field(default=None, description="Filter by end user session ID")
@@ -85,10 +83,27 @@ class WorkflowRunForLogResponse(ResponseModel):
         return to_timestamp(value)
 
 
+class WorkflowAppLogEvaluationNodeInfoResponse(ResponseModel):
+    node_id: str
+    type: str
+    title: str
+
+
+class WorkflowAppLogEvaluationItemResponse(ResponseModel):
+    name: str
+    value: Any = None
+    details: dict[str, Any] = Field(default_factory=dict)
+    node_info: WorkflowAppLogEvaluationNodeInfoResponse | None = Field(
+        default=None,
+        serialization_alias="nodeInfo",
+    )
+
+
 class WorkflowAppLogPartialResponse(ResponseModel):
     id: str
     workflow_run: WorkflowRunForLogResponse | None = None
     details: Any = None
+    evaluation: list[WorkflowAppLogEvaluationItemResponse] = Field(default_factory=list)
     created_from: str | None = None
     created_by_role: str | None = None
     created_by_account: SimpleAccount | None = None
@@ -113,6 +128,8 @@ register_schema_models(
     console_ns,
     WorkflowAppLogQuery,
     WorkflowRunForLogResponse,
+    WorkflowAppLogEvaluationNodeInfoResponse,
+    WorkflowAppLogEvaluationItemResponse,
     WorkflowAppLogPartialResponse,
     WorkflowAppLogPaginationResponse,
 )

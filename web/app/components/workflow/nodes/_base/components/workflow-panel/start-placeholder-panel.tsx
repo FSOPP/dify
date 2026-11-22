@@ -2,17 +2,17 @@ import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 
 export function StartPlaceholderPanelTitle() {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['workflow'])
 
   return (
-    <div className="mr-2 min-w-0 grow system-xl-semibold text-text-primary">
+    <div className="me-2 min-w-0 grow system-xl-semibold text-text-primary">
       {t(($) => $['nodes.startPlaceholder.panelTitle'], { ns: 'workflow' })}
     </div>
   )
 }
 
 export function StartPlaceholderPanelDescription() {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['workflow'])
 
   return (
     <div className="px-4 pb-3 system-xs-regular text-text-tertiary">

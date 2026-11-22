@@ -25,7 +25,7 @@ const Item = ({
   onSelect,
   onOpen,
 }: ItemProps) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['datasetPipeline'])
   const { name, type, size } = file
 
   const isBucket = type === 'bucket'
@@ -76,7 +76,7 @@ const Item = ({
           <PopoverTrigger
             openOnHover
             aria-label={disabledTip}
-            className="flex grow items-center gap-x-1 overflow-hidden border-0 bg-transparent p-0 py-0.5 text-left opacity-30"
+            className="flex grow items-center gap-x-1 overflow-hidden border-0 bg-transparent p-0 py-0.5 text-start opacity-30"
           >
             <FileIcon type={type} fileName={name} className="shrink-0 transform-gpu" />
             <span className="grow truncate system-sm-medium text-text-secondary" title={name}>
@@ -89,7 +89,8 @@ const Item = ({
             )}
           </PopoverTrigger>
           <PopoverContent
-            placement="top-end"
+            side="top"
+            align="end"
             className="px-3 py-2 system-xs-regular text-text-tertiary"
           >
             {disabledTip}

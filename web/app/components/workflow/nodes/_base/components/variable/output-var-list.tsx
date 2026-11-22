@@ -22,7 +22,7 @@ type Props = Readonly<{
 }>
 
 const OutputVarList: FC<Props> = ({ readonly, outputs, outputKeyOrders, onChange, onRemove }) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['appDebug', 'workflow'])
 
   const list = outputKeyOrders.map((key) => {
     return {
@@ -113,7 +113,7 @@ const OutputVarList: FC<Props> = ({ readonly, outputs, outputKeyOrders, onChange
             value={item.variable_type}
             onChange={handleVarTypeChange(index)}
           />
-          <RemoveButton onClick={handleVarRemove(index)} />
+          {!readonly && <RemoveButton onClick={handleVarRemove(index)} />}
         </div>
       ))}
     </div>

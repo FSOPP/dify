@@ -67,7 +67,7 @@ const AgentOutputBlockComponent = ({
   onChange,
   onEdit,
 }: AgentOutputBlockComponentProps) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['workflowAgent'])
   const [editor] = useLexicalComposerContext()
   const selected = getAgentOutputTypeOption(outputType)
   const [draftName, setDraftName] = useState(name)
@@ -83,7 +83,7 @@ const AgentOutputBlockComponent = ({
   }, [name])
 
   useEffect(() => {
-    if (!isEditing) return
+    if (!isEditing || openTypeSelectOnEdit) return
     if (skipNameFocusRef.current) {
       skipNameFocusRef.current = false
       return
@@ -95,7 +95,7 @@ const AgentOutputBlockComponent = ({
     input.focus()
     if (selectNameOnEdit) input.setSelectionRange(0, input.value.length)
     else input.setSelectionRange(input.value.length, input.value.length)
-  }, [isEditing, selectNameOnEdit])
+  }, [isEditing, openTypeSelectOnEdit, selectNameOnEdit])
 
   if (name !== lastNodeName) {
     setLastNodeName(name)
@@ -173,7 +173,7 @@ const AgentOutputBlockComponent = ({
       <span
         role="button"
         tabIndex={0}
-        aria-label={t(($) => $['nodes.agent.outputVars.edit'], { ns: 'workflow', name })}
+        aria-label={t(($) => $['nodes.agent.outputVars.edit'], { ns: 'workflowAgent', name })}
         contentEditable={false}
         className="group/agent-output inline-flex min-w-4.5 cursor-pointer items-center gap-1 rounded-[5px] border border-util-colors-violet-violet-100 bg-util-colors-violet-violet-50 px-1 py-0.5 align-middle shadow-xs"
         onClick={handleEditRequest}
@@ -207,17 +207,19 @@ const AgentOutputBlockComponent = ({
       contentEditable={false}
       className="inline-flex items-center gap-0.75 rounded-[5px] border border-util-colors-violet-violet-700 bg-util-colors-violet-violet-50 p-px align-middle shadow-xs"
     >
-      <span className="flex min-w-0 items-center gap-0.5 pl-0.5">
+      <span className="flex min-w-0 items-center gap-0.5 ps-0.5">
         <span
           aria-hidden="true"
           className="i-custom-vender-workflow-variable-x size-3.5 shrink-0 text-util-colors-violet-violet-700"
         />
         <input
           ref={nameInputRef}
-          aria-label={t(($) => $['nodes.agent.outputVars.nameLabel'], { ns: 'workflow' })}
+          aria-label={t(($) => $['nodes.agent.outputVars.nameLabel'], { ns: 'workflowAgent' })}
           value={draftName}
           className="h-4 max-w-28 min-w-5 border-0 bg-transparent p-0 text-center system-xs-regular text-util-colors-violet-violet-700 outline-hidden placeholder:text-util-colors-violet-violet-700/50 focus:w-24"
-          placeholder={t(($) => $['nodes.agent.outputVars.namePlaceholder'], { ns: 'workflow' })}
+          placeholder={t(($) => $['nodes.agent.outputVars.namePlaceholder'], {
+            ns: 'workflowAgent',
+          })}
           onMouseDown={(event) => event.stopPropagation()}
           onClick={(event) => event.stopPropagation()}
           onKeyDown={(event) => {
@@ -283,11 +285,11 @@ const AgentOutputBlockComponent = ({
         }}
       >
         <SelectLabel className="sr-only">
-          {t(($) => $['nodes.agent.outputVars.typeLabel'], { ns: 'workflow' })}
+          {t(($) => $['nodes.agent.outputVars.typeLabel'], { ns: 'workflowAgent' })}
         </SelectLabel>
         <SelectTrigger
-          aria-label={t(($) => $['nodes.agent.outputVars.typeLabel'], { ns: 'workflow' })}
-          className="h-4 min-w-4 rounded bg-util-colors-violet-violet-200 py-0 pr-0.5 pl-1 system-2xs-semibold-uppercase text-util-colors-violet-violet-700 hover:bg-util-colors-violet-violet-200"
+          aria-label={t(($) => $['nodes.agent.outputVars.typeLabel'], { ns: 'workflowAgent' })}
+          className="h-4 min-w-4 rounded bg-util-colors-violet-violet-200 py-0 ps-1 pe-0.5 system-2xs-semibold-uppercase text-util-colors-violet-violet-700 hover:bg-util-colors-violet-violet-200"
           onMouseDown={() => {
             skipNextBlurCommitRef.current = true
           }}

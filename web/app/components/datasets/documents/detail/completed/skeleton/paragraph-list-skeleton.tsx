@@ -1,7 +1,7 @@
 import { CheckboxSkeleton } from '@langgenius/dify-ui/checkbox'
+import { Separator } from '@langgenius/dify-ui/separator'
 import { RiArrowRightSLine } from '@remixicon/react'
 import * as React from 'react'
-import Divider from '@/app/components/base/divider'
 import {
   SkeletonContainer,
   SkeletonPoint,
@@ -36,7 +36,7 @@ const CardSkelton = React.memo(() => {
       </SkeletonContainer>
       <SkeletonContainer className="p-1 pb-2">
         <SkeletonRow>
-          <SkeletonRow className="h-7 gap-x-0.5 rounded-lg bg-dataset-child-chunk-expand-btn-bg pr-3 pl-1">
+          <SkeletonRow className="h-7 gap-x-0.5 rounded-lg bg-dataset-child-chunk-expand-btn-bg ps-1 pe-3">
             <RiArrowRightSLine className="size-4 text-text-secondary opacity-20" />
             <SkeletonRectangle className="w-32 bg-text-quaternary" />
           </SkeletonRow>
@@ -51,7 +51,7 @@ CardSkelton.displayName = 'CardSkelton'
 const ParagraphListSkeleton = () => {
   return (
     <div className="relative z-10 flex h-full flex-col overflow-y-hidden">
-      <div className="absolute top-0 left-0 z-20 size-full bg-dataset-chunk-list-mask-bg" />
+      <div className="absolute inset-s-0 top-0 z-20 size-full bg-dataset-chunk-list-mask-bg" />
       {Array.from({ length: 10 }).map((_, index) => {
         return (
           <div key={index} className="flex items-start gap-x-2">
@@ -60,7 +60,11 @@ const ParagraphListSkeleton = () => {
               <CardSkelton />
               {index !== 9 && (
                 <div className="w-full px-3">
-                  <Divider type="horizontal" className="my-1 bg-divider-subtle" />
+                  <Separator
+                    decorative
+                    orientation="horizontal"
+                    className="my-1 h-[0.5px] bg-divider-subtle"
+                  />
                 </div>
               )}
             </div>

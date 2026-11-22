@@ -16,7 +16,7 @@ type SettingContentProps = {
   onChange?: OnFeaturesChange
 }
 const SettingContent = ({ imageUpload, onClose, onChange }: SettingContentProps) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['common', 'fileUpload'])
   const featuresStore = useFeaturesStore()
   const file = useFeatures((state) => state.features.file)
   const fileSettingPayload = useMemo(() => {
@@ -55,8 +55,8 @@ const SettingContent = ({ imageUpload, onClose, onChange }: SettingContentProps)
       <div className="mb-4 flex items-center justify-between">
         <div className="system-xl-semibold text-text-primary">
           {!imageUpload
-            ? t(($) => $['feature.fileUpload.modalTitle'], { ns: 'appDebug' })
-            : t(($) => $['feature.imageUpload.modalTitle'], { ns: 'appDebug' })}
+            ? t(($) => $['feature.fileUpload.modalTitle'], { ns: 'fileUpload' })
+            : t(($) => $['feature.imageUpload.modalTitle'], { ns: 'fileUpload' })}
         </div>
         <button
           type="button"
@@ -75,7 +75,7 @@ const SettingContent = ({ imageUpload, onClose, onChange }: SettingContentProps)
         onChange={(p: UploadFileSetting) => setTempPayload(p)}
       />
       <div className="mt-4 flex items-center justify-end">
-        <Button onClick={onClose} className="mr-2">
+        <Button onClick={onClose} className="me-2">
           {t(($) => $['operation.cancel'], { ns: 'common' })}
         </Button>
         <Button

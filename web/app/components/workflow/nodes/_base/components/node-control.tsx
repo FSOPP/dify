@@ -5,7 +5,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@langgenius/dify-ui/too
 import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useHooksStore } from '@/app/components/workflow/hooks-store'
-import { NodeActionsDropdown } from '@/app/components/workflow/node-actions-menu'
+import { NodeActionsMenu } from '@/app/components/workflow/node-actions-menu'
 import { useWorkflowStore } from '@/app/components/workflow/store'
 import { useNodesInteractions } from '../../../hooks/use-nodes-interactions'
 import { useNodesReadOnly } from '../../../hooks/use-workflow'
@@ -16,9 +16,9 @@ type NodeControlProps = Pick<Node, 'id' | 'data'> & {
   pluginInstallLocked?: boolean
 }
 const NodeControl: FC<NodeControlProps> = ({ id, data, pluginInstallLocked }) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['workflow', 'workflowDebug'])
   const { handleNodeSelect } = useNodesInteractions()
-  const nodesReadOnly = useNodesReadOnly()
+  const { nodesReadOnly } = useNodesReadOnly()
   const workflowStore = useWorkflowStore()
   const canRun = useHooksStore((s) => s.accessControl.canRun)
   const isSingleRunning = data._singleRunningStatus === NodeRunningStatus.Running
@@ -27,7 +27,7 @@ const NodeControl: FC<NodeControlProps> = ({ id, data, pluginInstallLocked }) =>
   return (
     <div
       className={cn(
-        'pointer-events-none absolute -top-8 right-0 flex h-8 origin-bottom-right pb-1 opacity-0',
+        'pointer-events-none absolute inset-e-0 -top-8 flex h-8 origin-bottom-right pb-1 opacity-0',
         'focus-within:pointer-events-auto focus-within:opacity-100',
         !pluginInstallLocked && 'group-hover:pointer-events-auto group-hover:opacity-100',
         data.selected && 'pointer-events-auto opacity-100',
@@ -45,7 +45,7 @@ const NodeControl: FC<NodeControlProps> = ({ id, data, pluginInstallLocked }) =>
             type="button"
             aria-label={
               isSingleRunning
-                ? t(($) => $['debug.variableInspect.trigger.stop'], { ns: 'workflow' })
+                ? t(($) => $['debug.variableInspect.trigger.stop'], { ns: 'workflowDebug' })
                 : t(($) => $['panel.runThisStep'], { ns: 'workflow' })
             }
             className={`flex size-6 items-center justify-center rounded-md ${isSingleRunning && 'cursor-pointer hover:bg-state-base-hover'}`}
@@ -73,7 +73,7 @@ const NodeControl: FC<NodeControlProps> = ({ id, data, pluginInstallLocked }) =>
             )}
           </button>
         )}
-        <NodeActionsDropdown id={id} data={data} />
+        <NodeActionsMenu id={id} data={data} />
       </div>
     </div>
   )

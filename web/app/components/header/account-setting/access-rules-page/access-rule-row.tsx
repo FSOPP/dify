@@ -1,5 +1,6 @@
 'use client'
 
+import type { AccessPolicy } from '@dify/contracts/api/console/workspaces/types.gen'
 import type { AccessRule } from './types'
 import { cn } from '@langgenius/dify-ui/cn'
 import { memo, useCallback } from 'react'
@@ -13,6 +14,7 @@ type AccessRuleRowProps = {
   showMenu?: boolean
   onView?: (rule: AccessRule) => void
   onEdit?: (rule: AccessRule) => void
+  onDelete: (policy: AccessPolicy) => void
 }
 
 const AccessRuleRow = ({
@@ -22,8 +24,9 @@ const AccessRuleRow = ({
   showMenu = true,
   onView,
   onEdit,
+  onDelete,
 }: AccessRuleRowProps) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['permission'])
   const { policy } = rule
   const description =
     policy.description?.trim() || t(($) => $['accessRule.noDescription'], { ns: 'permission' })
@@ -40,7 +43,12 @@ const AccessRuleRow = ({
         <p className="system-xs-regular leading-4 text-text-tertiary">{description}</p>
       </div>
       {showMenu && canManage && (
-        <AccessRuleRowMenu onView={handleView} onEdit={handleEdit} rule={policy} />
+        <AccessRuleRowMenu
+          onView={handleView}
+          onEdit={handleEdit}
+          onDelete={onDelete}
+          rule={policy}
+        />
       )}
     </div>
   )

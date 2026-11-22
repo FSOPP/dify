@@ -20,7 +20,7 @@ const STEP_T_MAP = {
 
 export const TopBar: FC<TopBarProps> = (props) => {
   const { className, datasetId, ...rest } = props
-  const { t } = useTranslation()
+  const { t } = useTranslation(['datasetCreation'])
 
   const fallbackRoute = useMemo(() => {
     return datasetId ? `/datasets/${datasetId}/documents` : '/datasets'
@@ -29,14 +29,14 @@ export const TopBar: FC<TopBarProps> = (props) => {
   return (
     <div
       className={cn(
-        'relative flex h-13 shrink-0 items-center justify-between border-b border-b-divider-subtle',
+        'relative flex shrink-0 flex-col items-stretch border-b border-b-divider-subtle xl:min-h-13 xl:flex-row xl:items-center xl:justify-between',
         className,
       )}
     >
       <Link
         href={fallbackRoute}
         replace
-        className="inline-flex h-12 items-center justify-start gap-1 py-2 pr-6 pl-2"
+        className="inline-flex h-12 items-center justify-start gap-1 py-2 ps-2 pe-6"
       >
         <div className="p-2">
           <RiArrowLeftLine className="size-4 text-text-primary" />
@@ -45,7 +45,7 @@ export const TopBar: FC<TopBarProps> = (props) => {
           {t(($) => $['steps.header.fallbackRoute'], { ns: 'datasetCreation' })}
         </p>
       </Link>
-      <div className="absolute top-1/2 left-1/2 -translate-1/2">
+      <div className="min-w-0 px-4 pb-3 xl:absolute xl:top-1/2 xl:left-1/2 xl:-translate-1/2 xl:p-0">
         <Stepper
           steps={Array.from({ length: 3 }, (_, i) => ({
             name: t(($) => $[STEP_T_MAP[(i + 1) as keyof typeof STEP_T_MAP]], {

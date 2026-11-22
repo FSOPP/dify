@@ -98,10 +98,12 @@ const Item: FC<ItemProps> = ({
   isSelected,
   onActivate,
 }) => {
+  const nestedVariableTypes: readonly VarType[] = [VarType.object, VarType.file]
+
   const isStructureOutput =
     itemData.type === VarType.object && (itemData.children as StructuredOutput)?.schema?.properties
   const isObj =
-    [VarType.object, VarType.file].includes(itemData.type) &&
+    nestedVariableTypes.includes(itemData.type) &&
     itemData.children &&
     (itemData.children as Var[]).length > 0
   const isEnv = itemData.variable.startsWith('env.')
@@ -214,12 +216,12 @@ const Item: FC<ItemProps> = ({
     <div
       ref={itemRef}
       className={cn(
-        isObj || isStructureOutput ? 'pr-1' : 'pr-4.5',
+        isObj || isStructureOutput ? 'pe-1' : 'pe-4.5',
         (isHovering || isSelected) &&
           (isObj || isStructureOutput
             ? 'bg-components-panel-on-panel-item-bg-hover'
             : 'bg-state-base-hover'),
-        'relative flex h-6 w-full cursor-pointer items-center rounded-md pl-3 outline-hidden focus:outline-hidden focus-visible:outline-hidden',
+        'relative flex h-6 w-full cursor-pointer items-center rounded-md ps-3 outline-hidden focus:outline-hidden focus-visible:outline-hidden',
         className,
       )}
       data-selected={isSelected ? 'true' : 'false'}
@@ -244,7 +246,7 @@ const Item: FC<ItemProps> = ({
         {!isEnv && !isChatVar && !isRagVariable && (
           <div
             title={itemData.variable}
-            className="ml-1 w-0 grow truncate system-sm-medium text-text-secondary"
+            className="ms-1 w-0 grow truncate system-sm-medium text-text-secondary"
           >
             {varName}
           </div>
@@ -252,7 +254,7 @@ const Item: FC<ItemProps> = ({
         {isEnv && (
           <div
             title={itemData.variable}
-            className="ml-1 w-0 grow truncate system-sm-medium text-text-secondary"
+            className="ms-1 w-0 grow truncate system-sm-medium text-text-secondary"
           >
             {itemData.variable.replace('env.', '')}
           </div>
@@ -260,7 +262,7 @@ const Item: FC<ItemProps> = ({
         {isChatVar && (
           <div
             title={itemData.des}
-            className="ml-1 w-0 grow truncate system-sm-medium text-text-secondary"
+            className="ms-1 w-0 grow truncate system-sm-medium text-text-secondary"
           >
             {itemData.variable.replace('conversation.', '')}
           </div>
@@ -268,20 +270,20 @@ const Item: FC<ItemProps> = ({
         {isRagVariable && (
           <div
             title={itemData.des}
-            className="ml-1 w-0 grow truncate system-sm-medium text-text-secondary"
+            className="ms-1 w-0 grow truncate system-sm-medium text-text-secondary"
           >
             {itemData.variable.split('.').slice(-1)[0]}
           </div>
         )}
       </div>
-      <div className="ml-1 shrink-0 text-xs font-normal text-text-tertiary capitalize">
+      <div className="ms-1 shrink-0 text-xs font-normal text-text-tertiary capitalize">
         {preferSchemaType && itemData.schemaType ? itemData.schemaType : itemData.type}
       </div>
       {(isObj || isStructureOutput) && (
         <span
           aria-hidden
           className={cn(
-            'ml-0.5 i-custom-vender-line-arrows-chevron-right size-3 text-text-quaternary',
+            'ms-0.5 i-custom-vender-line-arrows-chevron-right size-3 text-text-quaternary',
             isHovering && 'text-text-tertiary',
           )}
         />
@@ -293,7 +295,8 @@ const Item: FC<ItemProps> = ({
     <Popover open={open} onOpenChange={noop}>
       <PopoverTrigger nativeButton={false} render={itemTrigger} />
       <PopoverContent
-        placement="left-start"
+        side="left"
+        align="start"
         sideOffset={0}
         className={cn(
           VAR_REFERENCE_CHILD_POPUP_CLASS_NAME,
@@ -321,7 +324,6 @@ const Item: FC<ItemProps> = ({
 }
 
 type Props = Readonly<{
-  hideSearch?: boolean
   searchText?: string
   searchBoxClassName?: string
   vars: NodeOutPutVar[]
@@ -336,9 +338,17 @@ type Props = Readonly<{
   onManageInputField?: () => void
   searchInputRef?: RefObject<HTMLInputElement | null>
   preferSchemaType?: boolean
-}>
+}> &
+  (
+    | { hideSearch: true; keyboardTarget: HTMLElement | RefObject<HTMLElement | null> | null }
+    | {
+        hideSearch?: false
+        keyboardTarget?: HTMLElement | RefObject<HTMLElement | null> | null
+      }
+  )
 const VarReferenceVars: FC<Props> = ({
   hideSearch,
+  keyboardTarget,
   searchText,
   searchBoxClassName,
   vars,
@@ -354,7 +364,7 @@ const VarReferenceVars: FC<Props> = ({
   searchInputRef: externalSearchInputRef,
   preferSchemaType,
 }) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['common', 'workflow', 'workflowDebug'])
   const [internalSearchValue, setInternalSearchValue] = useState('')
   const listRef = useRef<HTMLDivElement>(null)
   const internalSearchInputRef = useRef<HTMLInputElement>(null)
@@ -425,9 +435,10 @@ const VarReferenceVars: FC<Props> = ({
 
   const handleKeyboardEvent = useCallback(
     (event: Pick<KeyboardEvent, 'key' | 'preventDefault' | 'stopPropagation'>) => {
-      if (event.key === 'Escape') {
+      if (event.key === 'Escape' && onClose) {
         event.preventDefault()
-        onClose?.()
+        event.stopPropagation()
+        onClose()
         return
       }
 
@@ -455,24 +466,38 @@ const VarReferenceVars: FC<Props> = ({
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.defaultPrevented || e.nativeEvent.isComposing) return
       handleKeyboardEvent(e)
     },
     [handleKeyboardEvent],
   )
 
   useEffect(() => {
-    if (!hideSearch) return
+    if (!keyboardTarget) return
+    const target = 'current' in keyboardTarget ? keyboardTarget.current : keyboardTarget
+    if (!target) return
 
-    const handleDocumentKeyDown = (event: KeyboardEvent) => {
-      if (event.altKey || event.ctrlKey || event.metaKey) return
+    const handleTargetKeyDown = (event: KeyboardEvent) => {
+      if (
+        !(event.target instanceof Node) ||
+        !target.contains(event.target) ||
+        event.defaultPrevented ||
+        event.isComposing ||
+        event.altKey ||
+        event.ctrlKey ||
+        event.metaKey
+      )
+        return
       if (!['ArrowDown', 'ArrowUp', 'Enter', 'Escape'].includes(event.key)) return
 
       handleKeyboardEvent(event)
     }
 
-    document.addEventListener('keydown', handleDocumentKeyDown, true)
-    return () => document.removeEventListener('keydown', handleDocumentKeyDown, true)
-  }, [handleKeyboardEvent, hideSearch])
+    // Run before React's node-movement capture handler while claiming only the declared owner.
+    const ownerDocument = target.ownerDocument
+    ownerDocument.addEventListener('keydown', handleTargetKeyDown, true)
+    return () => ownerDocument.removeEventListener('keydown', handleTargetKeyDown, true)
+  }, [handleKeyboardEvent, keyboardTarget])
 
   return (
     <>
@@ -522,7 +547,7 @@ const VarReferenceVars: FC<Props> = ({
             )}
           </InputGroup>
           <div
-            className="relative -left-1 h-[0.5px] bg-black/5"
+            className="relative -inset-s-1 h-[0.5px] bg-black/5"
             style={{
               width: 'calc(100% + 8px)',
             }}
@@ -573,7 +598,7 @@ const VarReferenceVars: FC<Props> = ({
                   <div className="relative mt-3.5 flex items-center space-x-1">
                     <div className="h-0 w-3 shrink-0 border border-divider-subtle"></div>
                     <div className="system-2xs-semibold-uppercase text-text-tertiary">
-                      {t(($) => $['debug.lastOutput'], { ns: 'workflow' })}
+                      {t(($) => $['debug.lastOutput'], { ns: 'workflowDebug' })}
                     </div>
                     <div className="h-0 shrink-0 grow border border-divider-subtle"></div>
                   </div>
@@ -582,7 +607,7 @@ const VarReferenceVars: FC<Props> = ({
           ))}
         </div>
       ) : (
-        <div className="mt-2 pl-3 text-xs leading-4.5 font-medium text-gray-500 uppercase">
+        <div className="mt-2 ps-3 text-xs leading-4.5 font-medium text-gray-500 uppercase">
           {t(($) => $['common.noVar'], { ns: 'workflow' })}
         </div>
       )}

@@ -30,13 +30,15 @@ type Props = Readonly<{
 }>
 
 const ApiInput: FC<Props> = ({ nodeId, readonly, method, onMethodChange, url, onUrlChange }) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['workflowIntegrations'])
 
   const [isFocus, setIsFocus] = useState(false)
   const { availableVars, availableNodesWithParent } = useAvailableVarList(nodeId, {
     onlyLeafNodeVar: false,
     filterVar: (varPayload: Var) => {
-      return [VarType.string, VarType.number, VarType.secret].includes(varPayload.type)
+      const textVariableTypes: readonly VarType[] = [VarType.string, VarType.number, VarType.secret]
+
+      return textVariableTypes.includes(varPayload.type)
     },
   })
 
@@ -53,10 +55,10 @@ const ApiInput: FC<Props> = ({ nodeId, readonly, method, onMethodChange, url, on
               'flex h-8 shrink-0 items-center rounded-lg border border-components-button-secondary-border bg-components-button-secondary-bg px-2.5',
             )}
           >
-            <div className="w-12 pl-0.5 text-xs leading-4.5 font-medium text-text-primary uppercase">
+            <div className="w-12 ps-0.5 text-xs leading-4.5 font-medium text-text-primary uppercase">
               {method}
             </div>
-            {!readonly && <RiArrowDownSLine className="ml-1 size-3.5 text-text-secondary" />}
+            {!readonly && <RiArrowDownSLine className="ms-1 size-3.5 text-text-secondary" />}
           </div>
         }
         popupClassName="top-[34px] w-[108px]"
@@ -78,8 +80,10 @@ const ApiInput: FC<Props> = ({ nodeId, readonly, method, onMethodChange, url, on
         nodesOutputVars={availableVars}
         availableNodes={availableNodesWithParent}
         onFocusChange={setIsFocus}
-        placeholder={!readonly ? t(($) => $['nodes.http.apiPlaceholder'], { ns: 'workflow' })! : ''}
-        placeholderClassName="leading-[21px]!"
+        placeholder={
+          !readonly ? t(($) => $['nodes.http.apiPlaceholder'], { ns: 'workflowIntegrations' })! : ''
+        }
+        placeholderClassName="truncate leading-[21px]!"
       />
     </div>
   )

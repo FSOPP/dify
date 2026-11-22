@@ -17,7 +17,7 @@ type LeftHeaderProps = {
 
 const LeftHeader = ({ steps, title, currentStep }: LeftHeaderProps) => {
   const { datasetId } = useParams()
-  const { t } = useTranslation()
+  const { t } = useTranslation(['common'])
 
   return (
     <div className="relative flex flex-col gap-y-0.5 pt-4 pb-2">
@@ -36,13 +36,13 @@ const LeftHeader = ({ steps, title, currentStep }: LeftHeaderProps) => {
           replace
           className={cn(
             iconButtonVariants({ variant: 'secondary-accent', size: 'xl' }),
-            'absolute top-3.5 -left-11 rounded-full',
+            'absolute -inset-s-11 top-3.5 rounded-full',
           )}
         >
           <RiArrowLeftLine aria-hidden className="size-5" />
         </Link>
       )}
-      <Effect className="-top-8.5 left-8 opacity-20" />
+      <Effect className="inset-s-8 -top-8.5 opacity-20" />
     </div>
   )
 }

@@ -25,14 +25,14 @@ const ThreeDotsIcon = ({ className }: SVGProps<SVGElement>) => {
 }
 
 const EmptyElement: FC = () => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['appAnnotation'])
 
   return (
     <div className="flex h-full items-center justify-center">
       <div className="box-border h-fit w-140 rounded-2xl bg-background-section-burn px-5 py-4">
         <span className="system-md-semibold text-text-secondary">
           {t(($) => $['noData.title'], { ns: 'appAnnotation' })}
-          <ThreeDotsIcon className="relative -top-3 -left-1.5 inline" />
+          <ThreeDotsIcon className="relative -inset-s-1.5 -top-3 inline" />
         </span>
         <div className="mt-2 system-sm-regular text-text-tertiary">
           {t(($) => $['noData.description'], { ns: 'appAnnotation' })}

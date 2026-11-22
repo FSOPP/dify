@@ -29,7 +29,7 @@ const isWorkflowStopEvent = (value: EventEmitterValue) =>
   typeof value !== 'string' && value.type === EVENT_WORKFLOW_STOP
 
 const RunMode = ({ text, disabled = false }: RunModeProps) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['workflow', 'workflowDebug'])
   const {
     handleWorkflowStartRunInWorkflow,
     handleWorkflowTriggerScheduleRunInWorkflow,
@@ -56,9 +56,22 @@ const RunMode = ({ text, disabled = false }: RunModeProps) => {
     testRunMenuRef.current?.toggle()
   }, [isRunDisabled])
 
-  useHotkey(TEST_RUN_MENU_HOTKEY, handleToggleTestRunMenu, {
-    ignoreInputs: true,
-  })
+  useHotkey(
+    TEST_RUN_MENU_HOTKEY,
+    (event) => {
+      if (event.defaultPrevented) return
+      event.preventDefault()
+      event.stopPropagation()
+      if (event.repeat) return
+      handleToggleTestRunMenu()
+    },
+    {
+      enabled: !isRunDisabled,
+      preventDefault: false,
+      stopPropagation: false,
+      ignoreInputs: true,
+    },
+  )
 
   const handleStop = useCallback(() => {
     handleStopRun(workflowRunningData?.task_id || '')
@@ -125,7 +138,7 @@ const RunMode = ({ text, disabled = false }: RunModeProps) => {
           disabled
           style={{ userSelect: 'none' }}
         >
-          <span aria-hidden className="mr-1 i-ri-play-large-line size-4" />
+          <span aria-hidden className="me-1 i-ri-play-large-line size-4" />
           {text ?? t(($) => $['common.run'], { ns: 'workflow' })}
           <ShortcutKbd hotkey={TEST_RUN_MENU_HOTKEY} textColor="secondary" />
         </button>
@@ -133,11 +146,11 @@ const RunMode = ({ text, disabled = false }: RunModeProps) => {
         <button
           type="button"
           className={cn(
-            'flex h-7 cursor-not-allowed items-center gap-x-1 rounded-l-md bg-state-accent-hover px-1.5 system-xs-medium text-text-accent',
+            'flex h-7 cursor-not-allowed items-center gap-x-1 rounded-s-md bg-state-accent-hover px-1.5 system-xs-medium text-text-accent',
           )}
           disabled={true}
         >
-          <span className="mr-1 i-ri-loader-2-line size-4 animate-spin" />
+          <span className="me-1 i-ri-loader-2-line size-4 animate-spin" />
           {isListening
             ? t(($) => $['common.listening'], { ns: 'workflow' })
             : t(($) => $['common.running'], { ns: 'workflow' })}
@@ -151,7 +164,7 @@ const RunMode = ({ text, disabled = false }: RunModeProps) => {
             )}
             style={{ userSelect: 'none' }}
           >
-            <span aria-hidden className="mr-1 i-ri-play-large-line size-4" />
+            <span aria-hidden className="me-1 i-ri-play-large-line size-4" />
             {text ?? t(($) => $['common.run'], { ns: 'workflow' })}
             <ShortcutKbd hotkey={TEST_RUN_MENU_HOTKEY} textColor="secondary" />
           </button>
@@ -160,9 +173,9 @@ const RunMode = ({ text, disabled = false }: RunModeProps) => {
       {isRunning && !isRunDisabled && (
         <button
           type="button"
-          aria-label={t(($) => $['debug.variableInspect.trigger.stop'], { ns: 'workflow' })}
+          aria-label={t(($) => $['debug.variableInspect.trigger.stop'], { ns: 'workflowDebug' })}
           className={cn(
-            'flex size-7 items-center justify-center rounded-r-md bg-state-accent-active',
+            'flex size-7 items-center justify-center rounded-e-md bg-state-accent-active',
           )}
           onClick={handleStop}
         >

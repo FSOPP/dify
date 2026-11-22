@@ -58,3 +58,7 @@ mise.toml
 
 .vscode/settings.json
 .vscode/mcp.json
+.vitest/
+
+# Cloudflare Workers build output (vinext POC)
+.cloudflare/

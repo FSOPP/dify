@@ -17,10 +17,10 @@ export function PublisherLatestVersionRow({
   latestVersion?: DeploymentVersion | null
   onShowAllVersions: () => void
 }) {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['deployments'])
 
   return (
-    <div className="flex items-center gap-1 py-0.5 pr-0.5 pl-1">
+    <div className="flex items-center gap-1 py-0.5 ps-1 pe-0.5">
       {isDeploying ? <PublisherDeployingMarker /> : <PublisherTimelineMarker position="bottom" />}
       <p
         role={isDeploying ? 'status' : undefined}

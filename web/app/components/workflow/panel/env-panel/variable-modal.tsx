@@ -3,6 +3,7 @@ import { Button } from '@langgenius/dify-ui/button'
 import { cn } from '@langgenius/dify-ui/cn'
 import { Field, FieldLabel } from '@langgenius/dify-ui/field'
 import { IconButton } from '@langgenius/dify-ui/icon-button'
+import { Infotip, InfotipContent, InfotipTrigger } from '@langgenius/dify-ui/infotip'
 import { Input } from '@langgenius/dify-ui/input'
 import { NumberField, NumberFieldGroup, NumberFieldInput } from '@langgenius/dify-ui/number-field'
 import { Textarea } from '@langgenius/dify-ui/textarea'
@@ -10,7 +11,6 @@ import * as React from 'react'
 import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { v4 as uuid4 } from 'uuid'
-import { Infotip } from '@/app/components/base/infotip'
 import { isLLMEnvironmentVariableValue } from '@/app/components/workflow/llm-environment-variable'
 import { LLMEnvironmentVariableValueField } from '@/app/components/workflow/llm-environment-variable-value-field'
 import { useWorkflowStore } from '@/app/components/workflow/store'
@@ -24,7 +24,9 @@ type ModalPropsType = {
 }
 
 const VariableModal = ({ env, onClose, onSave }: ModalPropsType) => {
-  const { t } = useTranslation()
+  const secretLabelId = React.useId()
+
+  const { t } = useTranslation(['appDebug', 'common', 'workflow', 'modelProvider'])
   const workflowStore = useWorkflowStore()
   const [type, setType] = React.useState<EnvironmentVariable['value_type']>('string')
   const [name, setName] = React.useState('')
@@ -187,11 +189,12 @@ const VariableModal = ({ env, onClose, onSave }: ModalPropsType) => {
             </button>
             <div className="relative min-w-0">
               <button
+                id={secretLabelId}
                 type="button"
                 aria-pressed={type === 'secret'}
                 disabled={isTypeChangeDisabled('secret')}
                 className={cn(
-                  'flex w-full min-w-0 cursor-pointer items-center justify-center rounded-lg border border-components-option-card-option-border bg-components-option-card-option-bg p-2 pr-5 system-sm-regular text-text-secondary hover:border-components-option-card-option-border-hover hover:bg-components-option-card-option-bg-hover hover:shadow-xs',
+                  'flex w-full min-w-0 cursor-pointer items-center justify-center rounded-lg border border-components-option-card-option-border bg-components-option-card-option-bg p-2 pe-5 system-sm-regular text-text-secondary hover:border-components-option-card-option-border-hover hover:bg-components-option-card-option-bg-hover hover:shadow-xs',
                   type === 'secret' &&
                     'border-[1.5px] border-components-option-card-option-selected-border bg-components-option-card-option-selected-bg font-medium text-text-primary shadow-xs hover:border-components-option-card-option-selected-border',
                 )}
@@ -199,12 +202,14 @@ const VariableModal = ({ env, onClose, onSave }: ModalPropsType) => {
               >
                 Secret
               </button>
-              <Infotip
-                aria-label={t(($) => $['env.modal.secretTip'], { ns: 'workflow' })}
-                className="absolute top-1/2 right-1 size-3.5 -translate-y-1/2"
-                popupClassName="w-[240px]"
-              >
-                {t(($) => $['env.modal.secretTip'], { ns: 'workflow' })}
+              <Infotip>
+                <InfotipTrigger
+                  aria-labelledby={secretLabelId}
+                  className="absolute inset-e-1 top-1/2 -translate-y-1/2"
+                />
+                <InfotipContent aria-labelledby={secretLabelId} className="w-60">
+                  {t(($) => $['env.modal.secretTip'], { ns: 'workflow' })}
+                </InfotipContent>
               </Infotip>
             </div>
             <button
@@ -228,7 +233,7 @@ const VariableModal = ({ env, onClose, onSave }: ModalPropsType) => {
             {t(($) => $['env.modal.name'], { ns: 'workflow' })}
           </FieldLabel>
           <Input
-            placeholder={t(($) => $['env.modal.namePlaceholder'], { ns: 'workflow' }) || ''}
+            placeholder={t(($) => $['env.modal.namePlaceholder'], { ns: 'workflow' })}
             value={name}
             onChange={handleVarNameChange}
             onBlur={(e) => checkVariableName(e.target.value)}
@@ -239,7 +244,7 @@ const VariableModal = ({ env, onClose, onSave }: ModalPropsType) => {
         <Field name="value" className="mb-4">
           {type === 'llm' ? (
             <div className="py-1 system-sm-semibold text-text-secondary">
-              {t(($) => $['modelProvider.model'], { ns: 'common' })}
+              {t(($) => $['modelProvider.model'], { ns: 'modelProvider' })}
             </div>
           ) : (
             <FieldLabel className="system-sm-semibold">
@@ -257,7 +262,7 @@ const VariableModal = ({ env, onClose, onSave }: ModalPropsType) => {
             <Textarea
               className="h-20 p-2"
               value={typeof value === 'string' || typeof value === 'number' ? value : ''}
-              placeholder={t(($) => $['env.modal.valuePlaceholder'], { ns: 'workflow' }) || ''}
+              placeholder={t(($) => $['env.modal.valuePlaceholder'], { ns: 'workflow' })}
               onValueChange={(value) => setValue(value)}
             />
           ) : (
@@ -282,7 +287,7 @@ const VariableModal = ({ env, onClose, onSave }: ModalPropsType) => {
           <Textarea
             className="h-20 p-2"
             value={description}
-            placeholder={t(($) => $['env.modal.descriptionPlaceholder'], { ns: 'workflow' }) || ''}
+            placeholder={t(($) => $['env.modal.descriptionPlaceholder'], { ns: 'workflow' })}
             onValueChange={(value) => setDescription(value)}
           />
         </Field>

@@ -69,7 +69,7 @@ const useAllModel = () => {
 }
 
 export const ModelBar: FC<ModelBarProps> = (props) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['workflow', 'workflowAgent'])
   const modelList = useAllModel()
   if (props.provider === undefined) {
     const tooltip = t(($) => $['nodes.agent.modelNotSelected'], { ns: 'workflow' })
@@ -87,7 +87,7 @@ export const ModelBar: FC<ModelBarProps> = (props) => {
                 showDeprecatedWarnIcon={false}
                 disabled
               />
-              <StatusDot status="error" className="absolute -top-0.5 -right-0.5" />
+              <StatusDot status="error" className="absolute -inset-e-0.5 -top-0.5" />
               <span className="sr-only">{tooltip}</span>
             </div>
           }
@@ -105,7 +105,7 @@ export const ModelBar: FC<ModelBarProps> = (props) => {
   if (!modelList) return null
 
   const modelNotInstalledTooltip = t(($) => $['nodes.agent.modelNotInstallTooltip'], {
-    ns: 'workflow',
+    ns: 'workflowAgent',
   })
   const modelSelector = (
     <div className="relative">
@@ -120,7 +120,7 @@ export const ModelBar: FC<ModelBarProps> = (props) => {
         showDeprecatedWarnIcon={false}
         disabled
       />
-      {showWarn && <StatusDot status="error" className="absolute -top-0.5 -right-0.5" />}
+      {showWarn && <StatusDot status="error" className="absolute -inset-e-0.5 -top-0.5" />}
       {showWarn && <span className="sr-only">{modelNotInstalledTooltip}</span>}
     </div>
   )

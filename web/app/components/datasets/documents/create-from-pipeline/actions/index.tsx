@@ -27,7 +27,7 @@ const Actions = ({
   onSelectAll,
   tip = '',
 }: ActionsProps) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['common', 'datasetCreation'])
   const { datasetId } = useParams()
 
   const indeterminate = useMemo(() => {
@@ -46,7 +46,7 @@ const Actions = ({
     <div className="flex items-center gap-x-2 overflow-hidden">
       {showSelect && (
         <>
-          <label className="flex shrink-0 cursor-pointer items-center gap-x-2 py-0.75 pr-2 pl-4">
+          <label className="flex shrink-0 cursor-pointer items-center gap-x-2 py-0.75 ps-4 pe-2">
             <Checkbox
               onCheckedChange={(checked) => onSelectAll?.(checked)}
               indeterminate={indeterminate}

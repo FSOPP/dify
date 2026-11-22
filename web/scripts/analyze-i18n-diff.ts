@@ -8,7 +8,7 @@
  * 4. Values for existing keys haven't changed
  * 5. Lists newly added keys and values
  *
- * Usage: npx tsx scripts/analyze-i18n-diff.ts
+ * Usage: node scripts/analyze-i18n-diff.ts
  */
 
 import { execSync } from 'node:child_process'
@@ -53,9 +53,9 @@ function flattenObject(obj: NestedTranslation, prefix = ''): FlatTranslation {
       result[newKey] = value
     } else if (Array.isArray(value)) {
       // Preserve arrays as-is
-      result[newKey] = value as string[]
+      result[newKey] = value
     } else if (typeof value === 'object' && value !== null) {
-      Object.assign(result, flattenObject(value as NestedTranslation, newKey))
+      Object.assign(result, flattenObject(value, newKey))
     }
   }
 

@@ -74,7 +74,7 @@ const MemoryConfig: FC<Props> = ({
   canSetRoleName = false,
   defaultMemory = MEMORY_DEFAULT,
 }) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['workflow'])
   const payload = config.data
   const windowInputId = useId()
   const windowSize = payload?.window?.size ?? WINDOW_SIZE_DEFAULT
@@ -190,7 +190,7 @@ const MemoryConfig: FC<Props> = ({
                   disabled={readonly || !payload.window?.enabled}
                 >
                   <NumberFieldGroup>
-                    <NumberFieldInput className="pr-0" />
+                    <NumberFieldInput className="pe-0" />
                   </NumberFieldGroup>
                 </NumberField>
               </Fieldset>

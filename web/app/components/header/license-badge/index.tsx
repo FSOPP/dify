@@ -8,7 +8,7 @@ import { consoleQuery } from '@/service/console'
 import PremiumBadge from '../../base/premium-badge'
 
 function LicenseBadge() {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['common'])
   const { data: license } = useQuery(consoleQuery.systemFeatures.license.get.queryOptions())
   const isExpiring = license?.status === zLicenseStatus.enum.expiring
 
@@ -18,7 +18,7 @@ function LicenseBadge() {
       <PremiumBadge color="orange" className="select-none">
         <span
           className={
-            'i-ri-hourglass-2-fill flex size-3 items-center pl-0.5 text-components-premium-badge-indigo-text-stop-0'
+            'i-ri-hourglass-2-fill flex size-3 items-center ps-0.5 text-components-premium-badge-indigo-text-stop-0'
           }
           aria-hidden="true"
         />

@@ -10,15 +10,17 @@ from collections.abc import Callable, Mapping
 from contextvars import ContextVar, Token
 from dataclasses import dataclass
 from datetime import UTC, datetime
-from enum import StrEnum
 from functools import wraps
-from typing import Literal, Protocol
+from typing import Literal, NotRequired, Protocol
 
+from pydantic import TypeAdapter
 from sqlalchemy import update
 from sqlalchemy.orm import Session
+from typing_extensions import TypedDict
 from werkzeug.exceptions import ServiceUnavailable
 
 from configs import dify_config
+from constants.oauth_bearer import TOKEN_CACHE_KEY_FMT, Scope, SubjectType, TokenType
 from libs.rate_limit import enforce_bearer_rate_limit
 from models import OAuthAccessToken
 
@@ -28,63 +30,6 @@ logger = logging.getLogger(__name__)
 # ============================================================================
 # Contract — types, enums, protocols
 # ============================================================================
-
-
-class Scope(StrEnum):
-    """Catalog of bearer scopes recognised by the openapi surface.
-
-    `FULL` is the catch-all carried by `dfoa_` account tokens — it satisfies
-    any per-route scope requirement. `dfoe_` tokens carry the per-feature
-    scopes (`APPS_RUN`, `APPS_READ_PERMITTED_EXTERNAL`).
-    """
-
-    FULL = "full"
-    APPS_READ = "apps:read"
-    APPS_READ_PERMITTED_EXTERNAL = "apps:read:permitted-external"
-    APPS_RUN = "apps:run"
-    WORKSPACE_READ = "workspace:read"
-    WORKSPACE_WRITE = "workspace:write"
-
-
-class SubjectType(StrEnum):
-    # Annotation-only names are not members; they declare what `__new__` attaches.
-    scopes: frozenset[Scope]
-    # Whether the subject's token rows carry an `account_id`. A subject that does
-    # not is keyed by its external issuer instead.
-    bound_to_account: bool
-
-    ACCOUNT = ("account", frozenset({Scope.FULL}), True)
-    EXTERNAL_SSO = ("external_sso", frozenset({Scope.APPS_RUN, Scope.APPS_READ_PERMITTED_EXTERNAL}), False)
-
-    def __new__(cls, value: str, scopes: frozenset[Scope], bound_to_account: bool) -> SubjectType:
-        obj = str.__new__(cls, value)
-        obj._value_ = value
-        obj.scopes = scopes
-        obj.bound_to_account = bound_to_account
-        return obj
-
-
-class TokenType(StrEnum):
-    """Many token types may serve one subject; the prefix is the only thing a
-    bearer string reveals, so it lives here and nowhere else.
-    """
-
-    prefix: str
-    subject: SubjectType
-
-    OAUTH_ACCOUNT = ("oauth_account", "dfoa_", SubjectType.ACCOUNT)
-    OAUTH_EXTERNAL_SSO = ("oauth_external_sso", "dfoe_", SubjectType.EXTERNAL_SSO)
-
-    def __new__(cls, value: str, prefix: str, subject: SubjectType) -> TokenType:
-        obj = str.__new__(cls, value)
-        obj._value_ = value
-        obj.prefix = prefix
-        obj.subject = subject
-        return obj
-
-    @classmethod
-    def for_token(cls, token: str) -> TokenType | None:
-        return next((token_type for token_type in cls if token.startswith(token_type.prefix)), None)
 
 
 @dataclass(frozen=True, slots=True)
@@ -108,6 +53,8 @@ class AuthContext:
 
     @property
     def scopes(self) -> frozenset[Scope]:
+        if self.token_type is TokenType.PERSONAL_ACCESS:
+            return frozenset()
         return self.token_type.subject.scopes
 
 
@@ -130,6 +77,18 @@ def try_get_auth_ctx() -> AuthContext | None:
     return _auth_ctx_var.get(None)
 
 
+class _CachedResolvedRow(TypedDict):
+    subject_email: str | None
+    subject_issuer: str | None
+    account_id: str | None
+    client_id: NotRequired[str | None]
+    token_id: str
+    expires_at: str | None
+
+
+_RESOLVED_ROW_CACHE_ADAPTER = TypeAdapter(_CachedResolvedRow)
+
+
 @dataclass(frozen=True, slots=True)
 class ResolvedRow:
     subject_email: str | None
@@ -139,7 +98,7 @@ class ResolvedRow:
     token_id: uuid.UUID
     expires_at: datetime | None
 
-    def to_cache(self) -> dict:
+    def to_cache(self) -> _CachedResolvedRow:
         return {
             "subject_email": self.subject_email,
             "subject_issuer": self.subject_issuer,
@@ -150,7 +109,7 @@ class ResolvedRow:
         }
 
     @classmethod
-    def from_cache(cls, data: dict) -> ResolvedRow:
+    def from_cache(cls, data: _CachedResolvedRow) -> ResolvedRow:
         return cls(
             subject_email=data["subject_email"],
             subject_issuer=data["subject_issuer"],
@@ -212,7 +171,6 @@ class BearerAuthenticator:
 # OAuth access token resolver (PAT resolver would be a sibling class)
 # ============================================================================
 
-TOKEN_CACHE_KEY_FMT = "auth:token:{hash}"
 POSITIVE_TTL_SECONDS = 60
 NEGATIVE_TTL_SECONDS = 10
 AUDIT_OAUTH_EXPIRED = "oauth.token_expired"
@@ -251,11 +209,11 @@ class OAuthAccessTokenResolver:
         raw = self._redis.get(self._cache_key(token_hash))
         if raw is None:
             return None
-        text = raw.decode() if isinstance(raw, (bytes, bytearray)) else raw
-        if text == "invalid":
+        if raw in ("invalid", b"invalid"):
             return "invalid"
         try:
-            return ResolvedRow.from_cache(json.loads(text))
+            data = _RESOLVED_ROW_CACHE_ADAPTER.validate_json(raw, strict=True)
+            return ResolvedRow.from_cache(data)
         except (ValueError, KeyError):
             logger.warning("auth:token cache entry malformed; treating as miss")
             return None

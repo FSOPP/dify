@@ -6,12 +6,12 @@ type ManageInputFieldProps = {
 }
 
 const ManageInputField = ({ onManage }: ManageInputFieldProps) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['pipeline'])
 
   return (
     <div className="flex items-center border-t border-divider-subtle pt-1">
       <div className="flex h-8 grow cursor-pointer items-center px-3" onClick={onManage}>
-        <RiAddLine className="mr-1 size-4 text-text-tertiary" />
+        <RiAddLine className="me-1 size-4 text-text-tertiary" />
         <div
           className="truncate system-xs-medium text-text-tertiary"
           title="Create user input field"

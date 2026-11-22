@@ -1,6 +1,7 @@
 'use client'
 
-import type { ComponentType, ReactNode } from 'react'
+import type { DialogHandle } from '@langgenius/dify-ui/dialog'
+import type { ReactNode } from 'react'
 import { cn } from '@langgenius/dify-ui/cn'
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@langgenius/dify-ui/dialog'
 import styles from './style.module.css'
@@ -17,9 +18,10 @@ type UpgradeModalClassNames = {
 }
 
 type UpgradeModalProps = {
-  open: boolean
+  open?: boolean
+  dialogHandle?: DialogHandle
   onOpenChange?: (open: boolean) => void
-  Icon?: ComponentType<{ className?: string }>
+  iconClassName?: string
   title: ReactNode
   description: ReactNode
   extraInfo?: ReactNode
@@ -29,8 +31,9 @@ type UpgradeModalProps = {
 
 export function UpgradeModal({
   open,
+  dialogHandle,
   onOpenChange,
-  Icon,
+  iconClassName,
   title,
   description,
   extraInfo,
@@ -38,14 +41,8 @@ export function UpgradeModal({
   classNames,
 }: UpgradeModalProps) {
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent
-        className={cn(
-          styles.surface,
-          'w-145 max-w-120 overflow-hidden rounded-2xl p-0',
-          classNames?.content,
-        )}
-      >
+    <Dialog handle={dialogHandle} open={open} onOpenChange={onOpenChange}>
+      <DialogContent className={cn(styles.surface, 'w-120 overflow-hidden', classNames?.content)}>
         <div className="relative">
           <div
             aria-hidden
@@ -56,7 +53,7 @@ export function UpgradeModal({
             )}
           />
           <div className={cn('px-8 pt-8', classNames?.body)}>
-            {Icon && (
+            {iconClassName && (
               <div
                 className={cn(
                   styles.icon,
@@ -64,17 +61,22 @@ export function UpgradeModal({
                   classNames?.icon,
                 )}
               >
-                <Icon className="size-6 text-text-primary-on-surface" />
+                <span
+                  aria-hidden
+                  className={cn(iconClassName, 'size-6 text-text-primary-on-surface')}
+                />
               </div>
             )}
             <div className={cn('mt-6 space-y-2', classNames?.copy)}>
               <DialogTitle
+                // oxlint-disable-next-line shadcn/no-restyle -- Upgrade hero keeps its marketing title type.
                 className={cn(styles.highlight, 'title-3xl-semi-bold', classNames?.title)}
               >
                 {title}
               </DialogTitle>
               <DialogDescription
-                className={cn('system-md-regular text-text-tertiary', classNames?.description)}
+                // oxlint-disable-next-line shadcn/no-restyle -- Upgrade hero keeps its marketing body type.
+                className={cn('text-sm/5 text-text-tertiary', classNames?.description)}
               >
                 {description}
               </DialogDescription>

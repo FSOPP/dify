@@ -18,7 +18,7 @@ type RunModeProps = {
 }
 
 const RunMode = ({ text }: RunModeProps) => {
-  const { t } = useTranslation('snippet')
+  const { t } = useTranslation(['snippet', 'workflow', 'workflowDebug'])
   const { handleWorkflowStartRunInWorkflow } = useWorkflowStartRun()
   const { handleStopRun } = useWorkflowRun()
   const workflowRunningData = useStore((s) => s.workflowRunningData)
@@ -40,19 +40,19 @@ const RunMode = ({ text }: RunModeProps) => {
         type="button"
         className={cn(
           'flex h-7 items-center gap-x-1 rounded-md px-1.5 system-xs-medium text-components-button-secondary-accent-text hover:bg-state-accent-hover',
-          isRunning && 'cursor-not-allowed rounded-l-md bg-state-accent-hover',
+          isRunning && 'cursor-not-allowed rounded-s-md bg-state-accent-hover',
         )}
         onClick={handleWorkflowStartRunInWorkflow}
         disabled={isRunning}
       >
         {isRunning ? (
           <>
-            <span aria-hidden className="mr-1 i-ri-loader-2-line size-4 animate-spin" />
+            <span aria-hidden className="me-1 i-ri-loader-2-line size-4 animate-spin" />
             {t(($) => $['common.running'], { ns: 'workflow' })}
           </>
         ) : (
           <>
-            <span aria-hidden className="mr-1 i-ri-play-large-line size-4" />
+            <span aria-hidden className="me-1 i-ri-play-large-line size-4" />
             {text ?? t(($) => $['common.run'], { ns: 'workflow' })}
             <ShortcutKbd hotkey={TEST_RUN_MENU_HOTKEY} textColor="secondary" />
           </>
@@ -62,8 +62,8 @@ const RunMode = ({ text }: RunModeProps) => {
       {isRunning && (
         <button
           type="button"
-          aria-label={t(($) => $['debug.variableInspect.trigger.stop'], { ns: 'workflow' })}
-          className="flex size-7 items-center justify-center rounded-r-md bg-state-accent-active"
+          aria-label={t(($) => $['debug.variableInspect.trigger.stop'], { ns: 'workflowDebug' })}
+          className="flex size-7 items-center justify-center rounded-e-md bg-state-accent-active"
           onClick={handleStop}
         >
           <span aria-hidden className="i-ri-stop-circle-line size-4 text-text-accent" />

@@ -6,7 +6,6 @@ import { useBoolean } from 'ahooks'
 import * as React from 'react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Variable02 } from '@/app/components/base/icons/src/vender/solid/development'
 import ImagePreview from '@/app/components/base/image-uploader/image-preview'
 
 type Props = Readonly<{
@@ -15,7 +14,7 @@ type Props = Readonly<{
 }>
 
 const VarPanel: FC<Props> = ({ varList, message_files }) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['appLog'])
   const [isCollapse, { toggle: toggleCollapse }] = useBoolean(false)
   const [imagePreviewUrl, setImagePreviewUrl] = useState('')
 
@@ -28,7 +27,7 @@ const VarPanel: FC<Props> = ({ varList, message_files }) => {
         )}
         onClick={toggleCollapse}
       >
-        <Variable02 className="size-4" />
+        <span aria-hidden className="i-custom-vender-solid-development-variable-02 size-4" />
         <div className="grow system-md-medium">
           {t(($) => $['detail.variables'], { ns: 'appLog' })}
         </div>
@@ -47,7 +46,7 @@ const VarPanel: FC<Props> = ({ varList, message_files }) => {
                 <span className="truncate">{label}</span>
                 <span className="shrink-0 opacity-60">{'}}'}</span>
               </div>
-              <div className="pl-2.5 whitespace-pre-wrap text-text-secondary">{value}</div>
+              <div className="ps-2.5 whitespace-pre-wrap text-text-secondary">{value}</div>
             </div>
           ))}
 
@@ -60,7 +59,7 @@ const VarPanel: FC<Props> = ({ varList, message_files }) => {
                 {message_files.map((url, index) => (
                   <div
                     key={index}
-                    className="ml-2.5 size-16 cursor-pointer rounded-lg bg-cover bg-center bg-no-repeat"
+                    className="ms-2.5 size-16 cursor-pointer rounded-lg bg-cover bg-center bg-no-repeat"
                     style={{ backgroundImage: `url(${url})` }}
                     onClick={() => setImagePreviewUrl(url)}
                   />

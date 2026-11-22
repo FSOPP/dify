@@ -14,9 +14,8 @@ import { useFilterTemplateLanguages } from '../atoms'
 import { LANGUAGE_OPTIONS } from '../templates/template-language'
 
 export default function CatalogLanguagesFilter() {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['plugin'])
   const [languages, setLanguages] = useFilterTemplateLanguages()
-  const [open, setOpen] = useState(false)
   const [searchText, setSearchText] = useState('')
   const triggerRef = useRef<HTMLButtonElement>(null)
   const shouldRestoreFocusRef = useRef(false)
@@ -55,7 +54,7 @@ export default function CatalogLanguagesFilter() {
   }
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover>
       <div className="relative inline-flex h-8 shrink-0 items-center">
         <PopoverTrigger
           render={
@@ -67,7 +66,7 @@ export default function CatalogLanguagesFilter() {
               className={cn(
                 'h-8 justify-start px-2 py-1 text-text-tertiary focus-visible:ring-inset',
                 !!selectedCount &&
-                  'border-[0.5px] border-components-button-secondary-border bg-components-button-secondary-bg pr-8 shadow-xs shadow-shadow-shadow-3',
+                  'border-[0.5px] border-components-button-secondary-border bg-components-button-secondary-bg pe-8 shadow-xs shadow-shadow-shadow-3',
                 !selectedCount && 'data-popup-open:bg-state-base-hover',
               )}
             >
@@ -112,7 +111,7 @@ export default function CatalogLanguagesFilter() {
               ns: 'plugin',
               label: triggerLabel,
             })}
-            className="absolute right-1 focus-visible:ring-inset"
+            className="absolute inset-e-1 focus-visible:ring-inset"
             onClick={() => {
               shouldRestoreFocusRef.current = true
               handleLanguagesChange([])
@@ -123,7 +122,7 @@ export default function CatalogLanguagesFilter() {
         )}
       </div>
       <PopoverContent
-        placement="bottom-end"
+        align="end"
         sideOffset={4}
         alignOffset={-6}
         className="border-none bg-transparent shadow-none"
@@ -136,13 +135,11 @@ export default function CatalogLanguagesFilter() {
                 name="language-query"
                 autoComplete="off"
                 enterKeyHint="search"
-                aria-label={t(($) => $['marketplace.searchFilterLanguage'], { ns: 'plugin' }) || ''}
+                aria-label={t(($) => $['marketplace.searchFilterLanguage'], { ns: 'plugin' })}
                 className="[&::-webkit-search-cancel-button]:appearance-none [&::-webkit-search-decoration]:appearance-none"
                 value={searchText}
                 onValueChange={setSearchText}
-                placeholder={
-                  t(($) => $['marketplace.searchFilterLanguage'], { ns: 'plugin' }) || ''
-                }
+                placeholder={t(($) => $['marketplace.searchFilterLanguage'], { ns: 'plugin' })}
               />
               <InputGroupAddon className="ps-1.75 pe-0.75">
                 <span
@@ -163,7 +160,7 @@ export default function CatalogLanguagesFilter() {
                 key={option.value}
                 className="flex h-7 cursor-pointer items-center rounded-lg px-2 py-1.5 select-none hover:bg-state-base-hover"
               >
-                <Checkbox className="mr-1" value={option.value} />
+                <Checkbox className="me-1" value={option.value} />
                 <div className="px-1 system-sm-medium text-text-secondary">
                   {option.nativeLabel}
                 </div>

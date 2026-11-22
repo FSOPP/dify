@@ -1,7 +1,7 @@
 import type { HeaderInNormalProps } from './header-in-normal'
 import type { HeaderInRestoringProps } from './header-in-restoring'
 import type { HeaderInHistoryProps } from './header-in-view-history'
-import dynamic from '@/next/dynamic'
+import dynamic from 'next/dynamic'
 import { useWorkflowMode } from '../hooks/use-workflow-mode'
 import HeaderInNormal from './header-in-normal'
 
@@ -25,7 +25,7 @@ const Header = ({
   const { normal, restoring, viewHistory } = useWorkflowMode()
 
   return (
-    <div className="absolute top-7 left-0 z-10 flex h-0 w-full items-center justify-between bg-mask-top2bottom-gray-50-to-transparent px-3">
+    <div className="absolute inset-s-0 top-7 z-10 flex h-0 w-full items-center justify-between bg-mask-top2bottom-gray-50-to-transparent px-3">
       {normal && <HeaderInNormal {...normalProps} />}
       {viewHistory && <HeaderInHistory {...viewHistoryProps} />}
       {restoring && <HeaderInRestoring {...restoringProps} />}

@@ -23,7 +23,7 @@ type Props = Readonly<{
 }>
 
 const PluginsPicker: FC<Props> = ({ updateMode, value, onChange, integrationCategory }) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['plugin'])
   const { data } = useInstalledPluginList()
   const pluginCategoryById = useMemo(() => {
     return new Map(data?.plugins.map((plugin) => [plugin.plugin_id, plugin.declaration.category]))
@@ -77,7 +77,7 @@ const PluginsPicker: FC<Props> = ({ updateMode, value, onChange, integrationCate
           </div>
           <button
             type="button"
-            className="shrink-0 cursor-pointer border-none bg-transparent p-0 text-left system-xs-medium text-text-tertiary hover:text-text-secondary focus-visible:ring-1 focus-visible:ring-components-input-border-active focus-visible:outline-hidden"
+            className="shrink-0 cursor-pointer border-none bg-transparent p-0 text-start system-xs-medium text-text-tertiary hover:text-text-secondary focus-visible:ring-1 focus-visible:ring-components-input-border-active focus-visible:outline-hidden"
             onClick={handleClear}
           >
             {t(($) => $[`${i18nPrefix}.operation.clearAll`], { ns: 'plugin' })}

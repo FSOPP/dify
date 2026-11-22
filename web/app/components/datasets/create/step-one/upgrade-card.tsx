@@ -14,7 +14,7 @@ import UpgradeBtn from '@/app/components/billing/upgrade-btn'
 import { systemFeaturesQueryOptions } from '@/features/system-features/client'
 
 const UpgradeCard: FC = () => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['billing'])
   const { data: deploymentEdition } = useSuspenseQuery({
     ...systemFeaturesQueryOptions(),
     select: ({ deployment_edition }) => deployment_edition,
@@ -28,7 +28,7 @@ const UpgradeCard: FC = () => {
   if (deploymentEdition !== 'CLOUD') return null
 
   return (
-    <div className="flex items-center justify-between rounded-xl border-[0.5px] border-components-panel-border-subtle bg-components-panel-on-panel-item-bg py-3 pr-3.5 pl-4 shadow-xs backdrop-blur-[5px]">
+    <div className="flex items-center justify-between rounded-xl border-[0.5px] border-components-panel-border-subtle bg-components-panel-on-panel-item-bg py-3 ps-4 pe-3.5 shadow-xs backdrop-blur-[5px]">
       <div>
         <div className="bg-[linear-gradient(92deg,var(--components-input-border-active-prompt-1,#0BA5EC)_0%,var(--components-input-border-active-prompt-2,#155AEF)_99.21%)] bg-clip-text title-md-semi-bold text-transparent">
           {t(($) => $['upgrade.uploadMultipleFiles.title'], { ns: 'billing' })}
@@ -40,7 +40,7 @@ const UpgradeCard: FC = () => {
       <UpgradeBtn
         size="custom"
         isShort
-        className="ml-3 h-8! rounded-lg! px-2"
+        className="ms-3 h-8! rounded-lg! px-2"
         labelKey="triggerLimitModal.upgrade"
         loc="upload-multiple-files"
         onClick={handleUpgrade}

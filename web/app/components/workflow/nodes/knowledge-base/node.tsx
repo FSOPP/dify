@@ -36,10 +36,10 @@ const SettingRow = memo(({ label, value, warning = false }: SettingRowProps) => 
           : 'bg-workflow-block-parma-bg',
       )}
     >
-      <div className="mr-2 shrink-0 system-xs-medium-uppercase text-text-tertiary">{label}</div>
+      <div className="me-2 shrink-0 system-xs-medium-uppercase text-text-tertiary">{label}</div>
       <div
         className={cn(
-          'grow truncate text-right system-xs-medium',
+          'grow truncate text-end system-xs-medium',
           warning ? 'text-text-warning' : 'text-text-secondary',
         )}
         title={value}
@@ -57,7 +57,14 @@ const RETRIEVAL_WARNING_CODES = new Set<KnowledgeBaseValidationIssueCode>([
 ])
 
 const Node: FC<NodeProps<KnowledgeBaseNodeType>> = ({ data }) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation([
+    'common',
+    'datasetCreation',
+    'datasetSettings',
+    'plugin',
+    'workflow',
+    'modelProvider',
+  ])
   const language = useLanguage()
   const settingsDisplay = useSettingsDisplay()
   const { data: embeddingModelList = [] } = useQuery(
@@ -153,7 +160,7 @@ const Node: FC<NodeProps<KnowledgeBaseNodeType>> = ({ data }) => {
         DERIVED_MODEL_STATUS_BADGE_I18N[
           embeddingModelStatus as keyof typeof DERIVED_MODEL_STATUS_BADGE_I18N
         ]
-      if (statusI18nKey) return t(($) => $[statusI18nKey], { ns: 'common' })
+      if (statusI18nKey) return t(($) => $[statusI18nKey], { ns: 'modelProvider' })
     }
 
     return (
@@ -188,7 +195,7 @@ const Node: FC<NodeProps<KnowledgeBaseNodeType>> = ({ data }) => {
     return (
       <div className="mb-1 space-y-0.5 px-3 py-1">
         <div className="flex h-6 items-center rounded-md border-[0.5px] border-state-warning-active bg-state-warning-hover px-1.5">
-          <span className="mr-1 size-1 shrink-0 rounded-xs bg-text-warning-secondary" />
+          <span className="me-1 size-1 shrink-0 rounded-xs bg-text-warning-secondary" />
           <div
             className="grow truncate system-xs-medium text-text-warning"
             title={validationIssueMessage}

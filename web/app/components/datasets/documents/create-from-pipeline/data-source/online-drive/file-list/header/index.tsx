@@ -22,13 +22,13 @@ const Header = ({
   searchResultsLength,
   onSearchValueChange,
 }: HeaderProps) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['datasetPipeline'])
   const searchLabel = t(($) => $['onlineDrive.breadcrumbs.searchPlaceholder'], {
     ns: 'datasetPipeline',
   })
 
   return (
-    <div className="flex items-center gap-x-2 bg-components-panel-bg p-1 pl-3">
+    <div className="flex items-center gap-x-2 bg-components-panel-bg p-1 ps-3">
       <Breadcrumbs
         breadcrumbs={breadcrumbs}
         keywords={keywords}

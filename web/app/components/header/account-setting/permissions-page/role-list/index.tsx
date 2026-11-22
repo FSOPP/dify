@@ -21,6 +21,7 @@ type RoleListProps = {
   isFetchingNextPage?: boolean
   onView?: (role: Role) => void
   onEdit?: (role: Role) => void
+  onDelete: (role: Role) => void
 }
 
 const RoleList = ({
@@ -30,8 +31,9 @@ const RoleList = ({
   isFetchingNextPage = false,
   onView,
   onEdit,
+  onDelete,
 }: RoleListProps) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['permission'])
 
   if (isLoading) {
     return (
@@ -61,6 +63,7 @@ const RoleList = ({
                 role={row}
                 onView={onView}
                 onEdit={onEdit}
+                onDelete={onDelete}
               />
             ))}
           </div>

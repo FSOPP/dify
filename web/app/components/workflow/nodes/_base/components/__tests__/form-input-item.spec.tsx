@@ -5,35 +5,15 @@ import type {
 } from '@/app/components/header/account-setting/model-provider-page/declarations'
 import { fireEvent, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { useState } from 'react'
 import { FormTypeEnum } from '@/app/components/header/account-setting/model-provider-page/declarations'
+import { createNode } from '@/app/components/workflow/__tests__/fixtures'
 import { renderWorkflowFlowComponent } from '@/app/components/workflow/__tests__/workflow-test-env'
+import { consoleQuery } from '@/service/console'
+import { createConsoleQueryWrapper } from '@/test/console/query-data'
+import { seedToolProviders } from '@/test/console/tool-providers'
 import { VarKindType } from '../../types'
 import FormInputItem from '../form-input-item'
-
-vi.mock('../../../../hooks/use-workflow', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('../../../../hooks/use-workflow')>()
-
-  return {
-    ...actual,
-    useIsChatMode: () => false,
-    useWorkflow: () => ({
-      getTreeLeafNodes: () => [],
-      getNodeById: () => undefined,
-      getBeforeNodesInSameBranchIncludeParent: () => [],
-    }),
-  }
-})
-
-vi.mock('../../../../hooks/use-workflow-variables', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('../../../../hooks/use-workflow-variables')>()
-
-  return {
-    ...actual,
-    useWorkflowVariables: () => ({
-      getNodeAvailableVars: () => [],
-    }),
-  }
-})
 
 const createSchema = (
   overrides: Partial<
@@ -66,27 +46,41 @@ const createOption = (value: string, overrides: Partial<FormOption> = {}): FormO
 })
 
 const renderFormInputItem = (props: Partial<ComponentProps<typeof FormInputItem>> = {}) => {
+  const { queryClient } = createConsoleQueryWrapper()
+  seedToolProviders(queryClient, {
+    builtInTools: [],
+    customTools: [],
+    workflowTools: [],
+    mcpTools: [],
+  })
+  queryClient.setQueryData(consoleQuery.spec.schemaDefinitions.get.queryKey(), [])
   const onChange = vi.fn()
-  renderWorkflowFlowComponent(
-    <FormInputItem
-      readOnly={false}
-      nodeId="node-1"
-      schema={createSchema()}
-      value={{
-        field: {
-          type: VarKindType.constant,
-          value: '',
-        },
-      }}
-      onChange={onChange}
-      {...props}
-    />,
-    {
-      edges: [],
-      hooksStoreProps: {},
-      nodes: [],
-    },
-  )
+  function Harness() {
+    const [value, setValue] = useState<ComponentProps<typeof FormInputItem>['value']>(
+      props.value ?? {
+        field: { type: VarKindType.constant, value: '' },
+      },
+    )
+    return (
+      <FormInputItem
+        readOnly={false}
+        nodeId="node-1"
+        schema={createSchema()}
+        {...props}
+        value={value}
+        onChange={(next) => {
+          onChange(next)
+          setValue(next)
+        }}
+      />
+    )
+  }
+  renderWorkflowFlowComponent(<Harness />, {
+    queryClient,
+    resource: { kind: 'app', appId: 'app-1', mode: 'workflow' },
+    nodes: [createNode({ id: 'node-1' })],
+    edges: [],
+  })
 
   return { onChange }
 }
@@ -139,7 +133,7 @@ describe('FormInputItem', () => {
     const { onChange } = renderFormInputItem({
       schema: createSchema({
         _type: FormTypeEnum.boolean,
-        type: FormTypeEnum.textInput,
+        type: FormTypeEnum.checkbox,
       }),
       value: {
         field: {
@@ -169,7 +163,7 @@ describe('FormInputItem', () => {
             show_on: [{ variable: 'mode', value: 'pro' }],
           }),
         ],
-        type: FormTypeEnum.textInput,
+        type: FormTypeEnum.checkbox,
       }),
       value: {
         field: {
@@ -196,4 +190,41 @@ describe('FormInputItem', () => {
       },
     })
   })
+})
+
+it.each([false, 0])(
+  'retains the static schema default %s when switching a variable to a constant',
+  (defaultValue) => {
+    const { onChange } = renderFormInputItem({
+      staticSchema: true,
+      schema: {
+        ...createSchema({
+          type: typeof defaultValue === 'number' ? FormTypeEnum.textNumber : FormTypeEnum.checkbox,
+          _type: typeof defaultValue === 'number' ? FormTypeEnum.textNumber : FormTypeEnum.boolean,
+        }),
+        default: defaultValue,
+      },
+      value: { field: { type: VarKindType.variable, value: ['upstream', 'value'] } },
+    })
+    fireEvent.click(screen.getByRole('radio', { name: 'workflow.nodes.common.typeSwitch.input' }))
+    expect(onChange).toHaveBeenCalledWith({
+      field: { type: VarKindType.constant, value: defaultValue },
+    })
+  },
+)
+
+it('prevents boolean edits and switching input kind in readonly mode', async () => {
+  const user = userEvent.setup()
+  const { onChange } = renderFormInputItem({
+    readOnly: true,
+    schema: createSchema({ _type: FormTypeEnum.boolean, type: FormTypeEnum.checkbox }),
+    value: { field: { type: VarKindType.constant, value: true } },
+  })
+  const falseButton = screen.getByRole('button', { name: 'False' })
+  const variable = screen.getByRole('radio', { name: 'workflow.nodes.common.typeSwitch.variable' })
+  expect(falseButton).toBeDisabled()
+  expect(variable).toBeDisabled()
+  await user.click(falseButton)
+  await user.click(variable)
+  expect(onChange).not.toHaveBeenCalled()
 })

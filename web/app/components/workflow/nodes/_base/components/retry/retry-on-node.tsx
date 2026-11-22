@@ -7,7 +7,7 @@ import { NodeRunningStatus } from '@/app/components/workflow/types'
 
 type RetryOnNodeProps = Pick<Node, 'id' | 'data'>
 const RetryOnNode = ({ data }: RetryOnNodeProps) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['workflow'])
   const { retry_config } = data
   const showSelectedBorder = data.selected || data._isBundled || data._isEntering
   const { isRunning, isSuccessful, isException, isFailed } = useMemo(() => {
@@ -43,19 +43,19 @@ const RetryOnNode = ({ data }: RetryOnNodeProps) => {
             })}
           {isRunning && (
             <>
-              <RiLoader2Line className="mr-1 size-3.5 animate-spin" />
+              <RiLoader2Line className="me-1 size-3.5 animate-spin" />
               {t(($) => $['nodes.common.retry.retrying'], { ns: 'workflow' })}
             </>
           )}
           {isSuccessful && (
             <>
-              <RiCheckboxCircleFill className="mr-1 size-3.5" />
+              <RiCheckboxCircleFill className="me-1 size-3.5" />
               {t(($) => $['nodes.common.retry.retrySuccessful'], { ns: 'workflow' })}
             </>
           )}
           {(isFailed || isException) && (
             <>
-              <RiAlertFill className="mr-1 size-3.5" />
+              <RiAlertFill className="me-1 size-3.5" />
               {t(($) => $['nodes.common.retry.retryFailed'], { ns: 'workflow' })}
             </>
           )}

@@ -1,14 +1,14 @@
 'use client'
 
+import type { WorkflowCommentBasic } from '@dify/contracts/api/console/apps/types.gen'
 import type { FC } from 'react'
-import type { WorkflowCommentList } from '@/app/components/workflow/comment/types'
 import { memo, useEffect, useMemo } from 'react'
 import { UserAvatarList } from '@/app/components/base/user-avatar-list'
 import { useFormatTimeFromNow } from '@/hooks/use-format-time-from-now'
 import { useStore } from '../store'
 
 type CommentPreviewProps = {
-  comment: WorkflowCommentList
+  comment: WorkflowCommentBasic
   onClick?: () => void
 }
 
@@ -32,7 +32,7 @@ const CommentPreview: FC<CommentPreviewProps> = ({ comment, onClick }) => {
 
   return (
     <div
-      className="w-80 cursor-pointer rounded-3xl rounded-bl-[3px] border-[0.5px] border-components-panel-border bg-components-panel-bg-blur p-4 shadow-lg backdrop-blur-[10px] transition-colors hover:bg-components-panel-on-panel-item-bg-hover"
+      className="w-80 cursor-pointer rounded-3xl rounded-es-[3px] border-[0.5px] border-components-panel-border bg-components-panel-bg-blur p-4 shadow-lg backdrop-blur-[10px] transition-colors hover:bg-components-panel-on-panel-item-bg-hover"
       onClick={onClick}
       onMouseEnter={() => setCommentPreviewHovering(true)}
       onMouseLeave={() => setCommentPreviewHovering(false)}

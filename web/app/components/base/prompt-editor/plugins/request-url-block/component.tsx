@@ -10,7 +10,7 @@ type RequestURLBlockComponentProps = {
 }
 
 const RequestURLBlockComponent: FC<RequestURLBlockComponentProps> = ({ nodeKey }) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['common'])
   const [ref, isSelected] = useSelectOrDelete(nodeKey, DELETE_REQUEST_URL_BLOCK_COMMAND)
 
   return (
@@ -21,7 +21,7 @@ const RequestURLBlockComponent: FC<RequestURLBlockComponentProps> = ({ nodeKey }
       )}
       ref={ref}
     >
-      <RiGlobalLine className="mr-0.5 size-3.5 text-util-colors-violet-violet-600" />
+      <RiGlobalLine className="me-0.5 size-3.5 text-util-colors-violet-violet-600" />
       <div className="system-xs-medium text-util-colors-violet-violet-600">
         {t(($) => $['promptEditor.requestURL.item.title'], { ns: 'common' })}
       </div>

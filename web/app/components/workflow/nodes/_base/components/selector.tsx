@@ -4,8 +4,6 @@ import { cn } from '@langgenius/dify-ui/cn'
 import { useClickAway } from 'ahooks'
 import * as React from 'react'
 import { useState } from 'react'
-import { ChevronSelectorVertical } from '@/app/components/base/icons/src/vender/line/arrows'
-import { Check } from '@/app/components/base/icons/src/vender/line/general'
 
 type Item = {
   value: string
@@ -14,7 +12,7 @@ type Item = {
 type Props = Readonly<{
   className?: string
   trigger?: React.JSX.Element
-  DropDownIcon?: any
+  dropdownIconClassName?: string
   noLeft?: boolean
   options: Item[]
   allOptions?: Item[]
@@ -32,7 +30,7 @@ type Props = Readonly<{
 const TypeSelector: FC<Props> = ({
   className,
   trigger,
-  DropDownIcon = ChevronSelectorVertical,
+  dropdownIconClassName = 'i-custom-vender-line-arrows-chevron-selector-vertical',
   noLeft,
   options: list,
   allOptions,
@@ -57,7 +55,7 @@ const TypeSelector: FC<Props> = ({
   }, ref)
   return (
     <div
-      className={cn(!trigger && !noLeft && '-left-2', 'relative select-none', className)}
+      className={cn(!trigger && !noLeft && '-inset-s-2', 'relative select-none', className)}
       ref={ref}
     >
       {trigger ? (
@@ -72,7 +70,7 @@ const TypeSelector: FC<Props> = ({
           onClick={() => setShowOption((isShown) => !isShown)}
           className={cn(
             showOption && 'bg-state-base-hover',
-            'flex h-5 cursor-pointer items-center rounded-md pr-0.5 pl-1 text-xs font-semibold text-text-secondary hover:bg-state-base-hover',
+            'flex h-5 cursor-pointer items-center rounded-md ps-1 pe-0.5 text-xs font-semibold text-text-secondary hover:bg-state-base-hover',
           )}
         >
           <div
@@ -85,7 +83,7 @@ const TypeSelector: FC<Props> = ({
           >
             {!noValue ? item?.label : placeholder}
           </div>
-          {!readonly && <DropDownIcon className="size-3" />}
+          {!readonly && <span aria-hidden className={cn(dropdownIconClassName, 'size-3')} />}
         </div>
       )}
 
@@ -111,7 +109,10 @@ const TypeSelector: FC<Props> = ({
             >
               <div>{item.label}</div>
               {showChecked && item.value === value && (
-                <Check className="size-4 text-text-primary" />
+                <span
+                  aria-hidden
+                  className="i-custom-vender-line-general-check size-4 text-text-primary"
+                />
               )}
             </div>
           ))}

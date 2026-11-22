@@ -1,7 +1,7 @@
 import type { AccessControlSubjects } from '../specific-groups-or-members'
 import type { AccessControlAccount, AccessControlGroup, Subject } from '@/models/access-control'
 import { RadioGroup } from '@langgenius/dify-ui/radio-group'
-import { screen } from '@testing-library/react'
+import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useState } from 'react'
 import { AccessMode, SubjectType } from '@/models/access-control'
@@ -10,6 +10,7 @@ import AccessControlItem from '../access-control-item'
 import AddMemberOrGroupDialog from '../add-member-or-group-pop'
 
 const mockUseSearchForWhiteListCandidates = vi.fn()
+const originalIntersectionObserver = globalThis.IntersectionObserver
 const intersectionObserverMocks = vi.hoisted(() => ({
   callback: null as null | ((entries: Array<{ isIntersecting: boolean }>) => void),
 }))
@@ -107,6 +108,10 @@ describe('AddMemberOrGroupDialog', () => {
     })
   })
 
+  afterAll(() => {
+    globalThis.IntersectionObserver = originalIntersectionObserver
+  })
+
   it('should open the search popover and display candidates', async () => {
     const user = userEvent.setup()
     render(<ControlledDialog />)
@@ -198,24 +203,6 @@ describe('AddMemberOrGroupDialog', () => {
     expect(status).toHaveTextContent('app.accessControlDialog.operateGroupAndMember.noResult')
   })
 
-  it('should show the empty state when no candidates are returned', async () => {
-    mockUseSearchForWhiteListCandidates.mockReturnValue({
-      isLoading: false,
-      isFetchingNextPage: false,
-      fetchNextPage: vi.fn(),
-      data: { pages: [] },
-    })
-
-    const user = userEvent.setup()
-    render(<ControlledDialog />)
-
-    await user.click(screen.getByText('common.operation.add'))
-
-    expect(screen.getByRole('status')).toHaveTextContent(
-      'app.accessControlDialog.operateGroupAndMember.noResult',
-    )
-  })
-
   it('should keep breadcrumbs visible when the current group has no candidates', async () => {
     mockUseSearchForWhiteListCandidates.mockImplementation((query: { groupId?: string }) => ({
       isLoading: false,
@@ -241,7 +228,13 @@ describe('AddMemberOrGroupDialog', () => {
       name: 'app.accessControlDialog.operateGroupAndMember.allMembers',
     })
     expect(allMembersButton).toBeInTheDocument()
-    expect(screen.getByText(baseGroup.name)).toBeInTheDocument()
+    const path = within(
+      screen.getByRole('navigation', {
+        name: 'app.accessControlDialog.operateGroupAndMember.allMembers',
+      }),
+    )
+    expect(path.getAllByRole('listitem')).toHaveLength(2)
+    expect(path.getByText(baseGroup.name)).toHaveAttribute('aria-current', 'location')
     expect(screen.getByRole('status')).toHaveTextContent(
       'app.accessControlDialog.operateGroupAndMember.noResult',
     )

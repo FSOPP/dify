@@ -1,9 +1,11 @@
 'use client'
+
 import type { FC } from 'react'
-import type { ExternalDataTool } from '@/models/common'
 import type { PromptRole, PromptVariable } from '@/models/debug'
 import { Button } from '@langgenius/dify-ui/button'
 import { cn } from '@langgenius/dify-ui/cn'
+import { IconButton } from '@langgenius/dify-ui/icon-button'
+import { Infotip, InfotipContent, InfotipTrigger } from '@langgenius/dify-ui/infotip'
 import { RiDeleteBinLine, RiErrorWarningFill } from '@remixicon/react'
 import { useBoolean } from 'ahooks'
 import copy from 'copy-to-clipboard'
@@ -11,16 +13,8 @@ import { produce } from 'immer'
 import * as React from 'react'
 import { useTranslation } from 'react-i18next'
 import { useContext } from 'use-context-selector'
-import { ADD_EXTERNAL_DATA_TOOL } from '@/app/components/app/configuration/config-var'
-import { toast } from '@/app/components/app/configuration/toast'
-import { Copy, CopyCheck } from '@/app/components/base/icons/src/vender/line/files'
-import { Infotip } from '@/app/components/base/infotip'
 import PromptEditor from '@/app/components/base/prompt-editor'
-import { INSERT_VARIABLE_VALUE_BLOCK_COMMAND } from '@/app/components/base/prompt-editor/plugins/variable-block'
 import ConfigContext from '@/context/debug-configuration'
-import { useEventEmitterContextContext } from '@/context/event-emitter'
-import { useModalContext } from '@/context/modal-context'
-import { AppModeEnum } from '@/types/app'
 import { getNewVar, getVars } from '@/utils/var'
 import ConfirmAddVar from './confirm-add-var'
 import MessageTypeSelector from './message-type-selector'
@@ -54,8 +48,9 @@ const AdvancedPromptInput: FC<Props> = ({
   onHideContextMissingTip,
   noResize,
 }) => {
-  const { t } = useTranslation()
-  const { eventEmitter } = useEventEmitterContextContext()
+  const promptLabelId = React.useId()
+
+  const { t } = useTranslation(['appDebug', 'common'])
 
   const {
     mode,
@@ -68,39 +63,8 @@ const AdvancedPromptInput: FC<Props> = ({
     showSelectDataSet,
     externalDataToolsConfig,
   } = useContext(ConfigContext)
-  const { setShowExternalDataToolModal } = useModalContext()
-  const handleOpenExternalDataToolModal = () => {
-    setShowExternalDataToolModal({
-      payload: {},
-      onSaveCallback: (newExternalDataTool?: ExternalDataTool) => {
-        if (!newExternalDataTool) return
-        eventEmitter?.emit({
-          type: ADD_EXTERNAL_DATA_TOOL,
-          payload: newExternalDataTool,
-        } as any)
-        eventEmitter?.emit({
-          type: INSERT_VARIABLE_VALUE_BLOCK_COMMAND,
-          payload: newExternalDataTool.variable,
-        } as any)
-      },
-      onValidateBeforeSaveCallback: (newExternalDataTool: ExternalDataTool) => {
-        for (let i = 0; i < promptVariables.length; i++) {
-          if (promptVariables[i]!.key === newExternalDataTool.variable) {
-            toast.error(
-              t(($) => $['varKeyError.keyAlreadyExists'], {
-                ns: 'appDebug',
-                key: promptVariables[i]!.key,
-              }),
-            )
-            return false
-          }
-        }
 
-        return true
-      },
-    })
-  }
-  const isChatApp = mode !== AppModeEnum.COMPLETION
+  const isChatApp = mode !== 'completion'
   const [isCopied, setIsCopied] = React.useState(false)
 
   const promptVariablesObj = (() => {
@@ -152,13 +116,13 @@ const AdvancedPromptInput: FC<Props> = ({
   const [editorHeight, setEditorHeight] = React.useState(isChatMode ? 200 : 508)
   const contextMissing = (
     <div
-      className="flex h-11 items-center justify-between rounded-t-xl pt-2 pr-3 pb-1 pl-4"
+      className="flex h-11 items-center justify-between rounded-t-xl ps-4 pe-3 pt-2 pb-1"
       style={{
         background: 'linear-gradient(180deg, #FEF0C7 0%, rgba(254, 240, 199, 0) 100%)',
       }}
     >
-      <div className="flex items-center pr-2">
-        <RiErrorWarningFill className="mr-1 h-4 w-4 text-[#F79009]" />
+      <div className="flex items-center pe-2">
+        <RiErrorWarningFill className="me-1 h-4 w-4 text-[#F79009]" />
         <div className="text-[13px] leading-4.5 font-medium text-[#DC6803]">
           {t(($) => $['promptMode.contextMissing'], { ns: 'appDebug' })}
         </div>
@@ -179,22 +143,21 @@ const AdvancedPromptInput: FC<Props> = ({
           <div
             className={cn(
               s.boxHeader,
-              'flex h-11 items-center justify-between rounded-t-xl bg-background-default pt-2 pr-3 pb-1 pl-4 hover:shadow-xs',
+              'flex h-11 items-center justify-between rounded-t-xl bg-background-default ps-4 pe-3 pt-2 pb-1 hover:shadow-xs',
             )}
           >
             {isChatMode ? (
               <MessageTypeSelector value={type} onChange={onTypeChange} />
             ) : (
               <div className="flex items-center space-x-1">
-                <div className="text-sm font-semibold text-indigo-800 uppercase">
+                <div id={promptLabelId} className="text-sm font-semibold text-indigo-800 uppercase">
                   {t(($) => $['pageTitle.line1'], { ns: 'appDebug' })}
                 </div>
-                <Infotip
-                  aria-label={t(($) => $.promptTip, { ns: 'appDebug' })}
-                  className="ml-1"
-                  popupClassName="w-[180px]"
-                >
-                  {t(($) => $.promptTip, { ns: 'appDebug' })}
+                <Infotip>
+                  <InfotipTrigger aria-labelledby={promptLabelId} className="ms-1" />
+                  <InfotipContent aria-labelledby={promptLabelId} className="w-45">
+                    {t(($) => $.promptTip, { ns: 'appDebug', input: '{{input}}' })}
+                  </InfotipContent>
                 </Infotip>
               </div>
             )}
@@ -205,17 +168,26 @@ const AdvancedPromptInput: FC<Props> = ({
                   className="size-6 cursor-pointer p-1 text-text-tertiary"
                 />
               )}
-              {!isCopied ? (
-                <Copy
-                  className="size-6 cursor-pointer p-1 text-text-tertiary"
-                  onClick={() => {
-                    copy(value)
-                    setIsCopied(true)
-                  }}
+              <IconButton
+                aria-label={t(($) => $['operation.copy'], { ns: 'common' })}
+                aria-disabled={isCopied}
+                size="md"
+                onClick={() => {
+                  if (isCopied) return
+                  copy(value)
+                  setIsCopied(true)
+                }}
+              >
+                <span
+                  aria-hidden
+                  className={cn(
+                    'size-4',
+                    isCopied
+                      ? 'i-custom-vender-line-files-copy-check'
+                      : 'i-custom-vender-line-files-copy',
+                  )}
                 />
-              ) : (
-                <CopyCheck className="size-6 p-1 text-text-tertiary" />
-              )}
+              </IconButton>
             </div>
           </div>
         )}
@@ -226,7 +198,7 @@ const AdvancedPromptInput: FC<Props> = ({
           minHeight={minHeight}
           onHeightChange={setEditorHeight}
           footer={
-            <div className="flex pb-2 pl-4">
+            <div className="flex ps-4 pb-2">
               <div className="h-4.5 rounded-md bg-divider-regular px-1 text-xs leading-4.5 text-text-tertiary">
                 {value.length}
               </div>
@@ -262,17 +234,6 @@ const AdvancedPromptInput: FC<Props> = ({
                   name: item.name,
                   value: item.key,
                 })),
-            }}
-            externalToolBlock={{
-              externalTools: modelConfig.configs.prompt_variables
-                .filter((item) => item.type === 'api')
-                .map((item) => ({
-                  name: item.name,
-                  variableName: item.key,
-                  icon: item.icon,
-                  icon_background: item.icon_background,
-                })),
-              onAddExternalTool: handleOpenExternalDataToolModal,
             }}
             historyBlock={{
               show: !isChatMode && isChatApp,

@@ -41,7 +41,7 @@ const NodeResizer = ({
   minHeight = 152,
   maxWidth,
 }: NodeResizerProps) => {
-  const { t } = useTranslation('common')
+  const { t } = useTranslation(['common'])
   const descriptionId = useId()
   const didDragRef = useRef(false)
   const { getNode, getNodes } = useReactFlow<CommonNodeType>()
@@ -126,7 +126,7 @@ const NodeResizer = ({
         <IconButton
           aria-label={t(($) => $['resize.node'])}
           aria-describedby={descriptionId}
-          className="nodrag nopan absolute right-px bottom-px"
+          className="nodrag nopan absolute inset-e-px bottom-px"
           onClick={(event) => {
             event.stopPropagation()
             if (event.detail > 0 && didDragRef.current) {

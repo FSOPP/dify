@@ -39,7 +39,7 @@ const WorkflowBody: FC<WorkflowBodyProps> = ({
   taskId,
   workflowProcessData,
 }) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['runLog', 'share'])
 
   if (!workflowProcessData) return null
 
@@ -53,7 +53,7 @@ const WorkflowBody: FC<WorkflowBodyProps> = ({
               isError && 'text-text-destructive',
             )}
           >
-            <RiPlayList2Line className="mr-1 size-3" />
+            <RiPlayList2Line className="me-1 size-3" />
             <span>{t(($) => $['generation.execution'], { ns: 'share' })}</span>
             <span className="px-1">·</span>
             <span>{getGenerationTaskLabel(taskId, depth)}</span>

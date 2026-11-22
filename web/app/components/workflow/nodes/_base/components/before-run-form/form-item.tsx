@@ -21,9 +21,6 @@ import * as React from 'react'
 import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { FileUploaderInAttachmentWrapper } from '@/app/components/base/file-uploader'
-import { Line3 } from '@/app/components/base/icons/src/public/common'
-import { BubbleX } from '@/app/components/base/icons/src/vender/line/others'
-import { Variable02 } from '@/app/components/base/icons/src/vender/solid/development'
 import TextGenerationImageUploader from '@/app/components/base/image-uploader/text-generation-image-uploader'
 import { FILE_EXTS } from '@/app/components/base/prompt-editor/constants'
 import { VarBlockIcon } from '@/app/components/workflow/block-icon'
@@ -52,10 +49,15 @@ const FormItem: FC<Props> = ({
   autoFocus,
   inStepRun = false,
 }) => {
-  const { t } = useTranslation()
+  const collectionInputTypes: readonly InputVarType[] = [
+    InputVarType.contexts,
+    InputVarType.iterator,
+  ]
+
+  const { t } = useTranslation(['appDebug', 'common', 'workflow'])
   const labelId = React.useId()
   const { type } = payload
-  const fileSettings = useHooksStore((s) => s.configsMap?.fileSettings)
+  const fileSettings = useHooksStore((s) => s.fileSettings)
   const jsonSchemaPlaceholder = React.useMemo(() => {
     const schema = (payload as any)?.json_schema
     if (!schema) return ''
@@ -101,15 +103,25 @@ const FormItem: FC<Props> = ({
               >
                 {nodeName}
               </div>
-              <Line3 className="mr-0.5"></Line3>
+              <span aria-hidden className="me-0.5 i-custom-public-common-line-3 h-3 w-1.25" />
             </div>
           )}
           <div className="flex items-center text-primary-600">
-            {!isChatVar && <Variable02 className="size-3.5" />}
-            {isChatVar && <BubbleX className="size-3.5 text-util-colors-teal-teal-700" />}
+            {!isChatVar && (
+              <span
+                aria-hidden
+                className="i-custom-vender-solid-development-variable-02 size-3.5"
+              />
+            )}
+            {isChatVar && (
+              <span
+                aria-hidden
+                className="i-custom-vender-line-others-bubble-x size-3.5 text-util-colors-teal-teal-700"
+              />
+            )}
             <div
               className={cn(
-                'ml-0.5 max-w-37.5 truncate text-xs font-medium',
+                'ms-0.5 max-w-37.5 truncate text-xs font-medium',
                 isChatVar && 'text-text-secondary',
               )}
               title={variable}
@@ -124,7 +136,7 @@ const FormItem: FC<Props> = ({
   })()
 
   const isBooleanType = type === InputVarType.checkbox
-  const isArrayLikeType = [InputVarType.contexts, InputVarType.iterator].includes(type)
+  const isArrayLikeType = collectionInputTypes.includes(type)
   const isContext = type === InputVarType.contexts
   const isIterator = type === InputVarType.iterator
   const isIteratorItemFile = isIterator && payload.isFileItem
@@ -354,7 +366,7 @@ const FormItem: FC<Props> = ({
                   (value as any).length > 1 ? (
                     <RiDeleteBinLine
                       onClick={handleArrayItemRemove(index)}
-                      className="mr-1 size-3.5 cursor-pointer text-text-tertiary"
+                      className="me-1 size-3.5 cursor-pointer text-text-tertiary"
                     />
                   ) : undefined
                 }
@@ -382,7 +394,7 @@ const FormItem: FC<Props> = ({
                   (value as any).length > 1 ? (
                     <RiDeleteBinLine
                       onClick={handleArrayItemRemove(index)}
-                      className="mr-1 size-3.5 cursor-pointer text-text-tertiary"
+                      className="me-1 size-3.5 cursor-pointer text-text-tertiary"
                     />
                   ) : undefined
                 }

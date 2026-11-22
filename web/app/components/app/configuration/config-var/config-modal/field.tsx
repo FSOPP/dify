@@ -25,7 +25,7 @@ const Field: FC<Props> = ({
   errorId,
   children,
 }) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['appDebug'])
   const Label = htmlFor ? 'label' : 'div'
   return (
     <div className={cn(className)}>
@@ -36,7 +36,7 @@ const Field: FC<Props> = ({
       >
         {title}
         {isOptional && (
-          <span className="ml-1 system-xs-regular text-text-tertiary">
+          <span className="ms-1 system-xs-regular text-text-tertiary">
             ({t(($) => $['variableConfig.optional'], { ns: 'appDebug' })})
           </span>
         )}

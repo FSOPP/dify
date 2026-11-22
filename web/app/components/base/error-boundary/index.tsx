@@ -50,7 +50,7 @@ class ErrorBoundaryInner extends React.Component<
   },
   ErrorBoundaryState
 > {
-  constructor(props: any) {
+  constructor(props: ErrorBoundaryInner['props']) {
     super(props)
     this.state = {
       hasError: false,
@@ -81,12 +81,15 @@ class ErrorBoundaryInner extends React.Component<
     if (this.props.onError) this.props.onError(error, errorInfo)
   }
 
-  override componentDidUpdate(prevProps: any) {
+  override componentDidUpdate(prevProps: ErrorBoundaryInner['props']) {
     const { resetKeys, resetOnPropsChange } = this.props
     const { hasError } = this.state
 
     if (hasError && prevProps.resetKeys !== resetKeys) {
-      if (resetKeys?.some((key, idx) => key !== prevProps.resetKeys?.[idx]))
+      if (
+        (resetKeys?.length ?? 0) !== (prevProps.resetKeys?.length ?? 0) ||
+        resetKeys?.some((key, idx) => key !== prevProps.resetKeys?.[idx])
+      )
         this.props.resetErrorBoundary()
     }
 
@@ -189,7 +192,7 @@ class ErrorBoundaryInner extends React.Component<
 
 // Main functional component wrapper
 const ErrorBoundary: React.FC<ErrorBoundaryProps> = (props) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['common'])
   const [errorBoundaryKey, setErrorBoundaryKey] = useState(0)
   const resetKeysRef = useRef(props.resetKeys)
   const prevResetKeysRef = useRef<Array<string | number> | undefined>(undefined)
@@ -220,9 +223,9 @@ const ErrorBoundary: React.FC<ErrorBoundaryProps> = (props) => {
 
   return (
     <ErrorBoundaryInner
+      key={errorBoundaryKey}
       {...props}
       copy={copy}
-      key={errorBoundaryKey}
       resetErrorBoundary={resetErrorBoundary}
       onResetKeysChange={onResetKeysChange}
     />

@@ -3,11 +3,10 @@ import { Popover, PopoverContent, PopoverTrigger } from '@langgenius/dify-ui/pop
 import { RiFontSize } from '@remixicon/react'
 import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Check } from '@/app/components/base/icons/src/vender/line/general'
 import { useFontSize } from './hooks'
 
 const FontSizeSelector = () => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['workflow'])
   const FONT_SIZE_LIST = [
     {
       key: '12px',
@@ -33,18 +32,18 @@ const FontSizeSelector = () => {
           <button
             type="button"
             className={cn(
-              'flex h-8 cursor-pointer items-center rounded-md pr-1.5 pl-2 text-[13px] font-medium text-text-tertiary hover:bg-state-base-hover hover:text-text-secondary',
+              'flex h-8 cursor-pointer items-center rounded-md ps-2 pe-1.5 text-[13px] font-medium text-text-tertiary hover:bg-state-base-hover hover:text-text-secondary',
               fontSizeSelectorShow && 'bg-state-base-hover text-text-secondary',
             )}
           >
-            <RiFontSize className="mr-1 size-4" />
+            <RiFontSize className="me-1 size-4" />
             {FONT_SIZE_LIST.find((font) => font.key === fontSize)?.value ||
               t(($) => $['nodes.note.editor.small'], { ns: 'workflow' })}
           </button>
         }
       />
       <PopoverContent
-        placement="bottom-start"
+        align="start"
         sideOffset={2}
         className="border-none bg-transparent shadow-none"
       >
@@ -52,7 +51,7 @@ const FontSizeSelector = () => {
           {FONT_SIZE_LIST.map((font) => (
             <div
               key={font.key}
-              className="flex h-8 cursor-pointer items-center justify-between rounded-md pr-2 pl-3 hover:bg-state-base-hover"
+              className="flex h-8 cursor-pointer items-center justify-between rounded-md ps-3 pe-2 hover:bg-state-base-hover"
               onClick={(e) => {
                 e.stopPropagation()
                 handleFontSize(font.key)
@@ -60,7 +59,12 @@ const FontSizeSelector = () => {
               }}
             >
               <div style={{ fontSize: font.key }}>{font.value}</div>
-              {fontSize === font.key && <Check className="size-4 text-text-accent" />}
+              {fontSize === font.key && (
+                <span
+                  aria-hidden
+                  className="i-custom-vender-line-general-check size-4 text-text-accent"
+                />
+              )}
             </div>
           ))}
         </div>

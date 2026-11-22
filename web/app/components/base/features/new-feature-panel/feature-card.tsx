@@ -1,6 +1,6 @@
+import { Infotip, InfotipContent, InfotipTrigger } from '@langgenius/dify-ui/infotip'
 import { Switch } from '@langgenius/dify-ui/switch'
 import * as React from 'react'
-import { Infotip } from '@/app/components/base/infotip'
 
 type Props = Readonly<{
   icon: React.ReactNode
@@ -10,6 +10,7 @@ type Props = Readonly<{
   description?: string
   children?: React.ReactNode
   disabled?: boolean
+  loading?: boolean
   onChange?: (state: boolean) => void
   onMouseEnter?: () => void
   onMouseLeave?: () => void
@@ -23,6 +24,7 @@ const FeatureCard = ({
   description,
   children,
   disabled,
+  loading,
   onChange,
   onMouseEnter,
   onMouseLeave,
@@ -31,7 +33,7 @@ const FeatureCard = ({
 
   return (
     <div
-      className="mb-1 rounded-xl border-t-[0.5px] border-l-[0.5px] border-effects-highlight bg-background-section-burn p-3"
+      className="group/feature-card mb-1 rounded-xl border-s-[0.5px] border-t-[0.5px] border-effects-highlight bg-background-section-burn p-3"
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
     >
@@ -40,17 +42,16 @@ const FeatureCard = ({
         <div className="flex grow items-center system-sm-semibold text-text-secondary">
           <span id={titleId}>{title}</span>
           {!!tooltip && (
-            <Infotip
-              aria-label={typeof tooltip === 'string' ? tooltip : String(title)}
-              className="ml-0.5 size-3.5"
-            >
-              {tooltip}
+            <Infotip>
+              <InfotipTrigger aria-labelledby={titleId} className="ms-0.5" />
+              <InfotipContent aria-labelledby={titleId}>{tooltip}</InfotipContent>
             </Infotip>
           )}
         </div>
         <Switch
           aria-labelledby={titleId}
           disabled={disabled}
+          loading={loading}
           className="shrink-0"
           onCheckedChange={(state) => onChange?.(state)}
           checked={value}

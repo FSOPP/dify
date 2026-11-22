@@ -37,7 +37,7 @@ const Group = ({
   handleView,
   handleClear,
 }: Props) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['workflowDebug'])
   const [isCollapsed, setIsCollapsed] = useState(false)
 
   const toolIcon = useToolIcon(nodeData?.nodePayload)
@@ -47,9 +47,9 @@ const Group = ({
   const isSystem = varType === VarInInspectType.system
   const groupTitle =
     nodeData?.title ||
-    (isEnv && t(($) => $['debug.variableInspect.envNode'], { ns: 'workflow' })) ||
-    (isChatVar && t(($) => $['debug.variableInspect.chatNode'], { ns: 'workflow' })) ||
-    (isSystem && t(($) => $['debug.variableInspect.systemNode'], { ns: 'workflow' })) ||
+    (isEnv && t(($) => $['debug.variableInspect.envNode'], { ns: 'workflowDebug' })) ||
+    (isChatVar && t(($) => $['debug.variableInspect.chatNode'], { ns: 'workflowDebug' })) ||
+    (isSystem && t(($) => $['debug.variableInspect.systemNode'], { ns: 'workflowDebug' })) ||
     ''
 
   const visibleVarList = isEnv ? varList : varList.filter((v) => v.visible)
@@ -108,7 +108,7 @@ const Group = ({
         <button
           type="button"
           aria-expanded={visibleVarList.length > 0 ? !isCollapsed : undefined}
-          className="flex min-w-0 grow cursor-pointer items-center gap-0.5 rounded-sm border-none bg-transparent p-0 text-left outline-hidden focus-visible:ring-1 focus-visible:ring-components-input-border-hover"
+          className="flex min-w-0 grow cursor-pointer items-center gap-0.5 rounded-sm border-none bg-transparent p-0 text-start outline-hidden focus-visible:ring-1 focus-visible:ring-components-input-border-hover"
           onClick={() => setIsCollapsed(!isCollapsed)}
         >
           <div className="size-3 shrink-0">
@@ -147,7 +147,7 @@ const Group = ({
               <TooltipTrigger
                 render={
                   <IconButton
-                    aria-label={t(($) => $['debug.variableInspect.view'], { ns: 'workflow' })}
+                    aria-label={t(($) => $['debug.variableInspect.view'], { ns: 'workflowDebug' })}
                     onClick={handleView}
                   >
                     <RiFileList3Line className="size-4" aria-hidden />
@@ -155,14 +155,16 @@ const Group = ({
                 }
               />
               <TooltipContent>
-                {t(($) => $['debug.variableInspect.view'], { ns: 'workflow' })}
+                {t(($) => $['debug.variableInspect.view'], { ns: 'workflowDebug' })}
               </TooltipContent>
             </Tooltip>
             <Tooltip>
               <TooltipTrigger
                 render={
                   <IconButton
-                    aria-label={t(($) => $['debug.variableInspect.clearNode'], { ns: 'workflow' })}
+                    aria-label={t(($) => $['debug.variableInspect.clearNode'], {
+                      ns: 'workflowDebug',
+                    })}
                     onClick={handleClear}
                   >
                     <RiDeleteBinLine className="size-4" aria-hidden />
@@ -170,7 +172,7 @@ const Group = ({
                 }
               />
               <TooltipContent>
-                {t(($) => $['debug.variableInspect.clearNode'], { ns: 'workflow' })}
+                {t(($) => $['debug.variableInspect.clearNode'], { ns: 'workflowDebug' })}
               </TooltipContent>
             </Tooltip>
           </div>
@@ -185,7 +187,7 @@ const Group = ({
                 type="button"
                 key={varItem.id}
                 className={cn(
-                  'relative flex w-full cursor-pointer items-center gap-1 rounded-md border-none px-3 py-1 text-left outline-hidden hover:bg-state-base-hover focus-visible:ring-1 focus-visible:ring-components-input-border-hover',
+                  'relative flex w-full cursor-pointer items-center gap-1 rounded-md border-none px-3 py-1 text-start outline-hidden hover:bg-state-base-hover focus-visible:ring-1 focus-visible:ring-components-input-border-hover',
                   varItem.id === currentVar?.var?.id
                     ? 'bg-state-base-hover-alt hover:bg-state-base-hover-alt'
                     : 'bg-transparent',

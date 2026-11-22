@@ -4,7 +4,6 @@ import { cn } from '@langgenius/dify-ui/cn'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@langgenius/dify-ui/tooltip'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { AlertTriangle } from '@/app/components/base/icons/src/vender/solid/alertsAndFeedback'
 import ImagePreview from '@/app/components/base/image-uploader/image-preview'
 import { TransferMethod } from '@/types/app'
 
@@ -25,7 +24,7 @@ const ImageList: FC<ImageListProps> = ({
   onImageLinkLoadSuccess,
   onImageLinkLoadError,
 }) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['common'])
   const [imagePreviewUrl, setImagePreviewUrl] = useState('')
 
   const handleImageLinkLoadSuccess = (item: ImageFile) => {
@@ -59,7 +58,7 @@ const ImageList: FC<ImageListProps> = ({
         {list.map((item, index) => (
           <li
             key={item._id}
-            className="group relative mr-1 rounded-lg border-[0.5px] border-black/5"
+            className="group relative me-1 rounded-lg border-[0.5px] border-black/5"
           >
             {item.type === TransferMethod.local_file && item.progress !== 100 && (
               <>
@@ -82,7 +81,7 @@ const ImageList: FC<ImageListProps> = ({
                   )}
                 </div>
                 {item.progress > -1 && (
-                  <span className="absolute top-[50%] left-[50%] z-1 translate-x-[-50%] translate-y-[-50%] text-sm text-white mix-blend-lighten">
+                  <span className="absolute inset-s-[50%] top-[50%] z-1 translate-x-[-50%] translate-y-[-50%] text-sm text-white mix-blend-lighten">
                     {item.progress}%
                   </span>
                 )}
@@ -105,7 +104,14 @@ const ImageList: FC<ImageListProps> = ({
                 )}
                 {item.progress === -1 && (
                   <Tooltip>
-                    <TooltipTrigger render={<AlertTriangle className="h-4 w-4 text-[#DC6803]" />} />
+                    <TooltipTrigger
+                      render={
+                        <span
+                          aria-hidden
+                          className="i-custom-vender-solid-alertsAndFeedback-alert-triangle h-4 w-4 text-[#DC6803]"
+                        />
+                      }
+                    />
                     <TooltipContent>
                       {t(($) => $['imageUploader.pasteImageLinkInvalid'], { ns: 'common' })}
                     </TooltipContent>
@@ -137,7 +143,7 @@ const ImageList: FC<ImageListProps> = ({
               <button
                 type="button"
                 className={cn(
-                  'absolute -top-2.25 -right-2.25 z-10 h-4.5 w-4.5 items-center justify-center border-none bg-transparent p-0',
+                  'absolute -inset-e-2.25 -top-2.25 z-10 h-4.5 w-4.5 items-center justify-center border-none bg-transparent p-0',
                   'rounded-2xl shadow-lg hover:bg-state-base-hover',
                   item.progress === -1 ? 'flex' : 'hidden group-hover:flex',
                 )}

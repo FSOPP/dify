@@ -24,7 +24,7 @@ type FormItemProps = {
   onChange: (value: any) => void
 }
 const FormItem = ({ nodeId, item, onChange }: FormItemProps) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['common', 'workflow', 'workflowLogic'])
   const { value_type, var_type, value } = item
   const valueLabel = item.label || t(($) => $['errorMsg.fields.variableValue'], { ns: 'workflow' })
   const normalizedVarValue = useMemo(() => {
@@ -39,7 +39,7 @@ const FormItem = ({ nodeId, item, onChange }: FormItemProps) => {
   )
 
   const handleChange = useCallback(
-    (value: any) => {
+    (value: unknown) => {
       onChange(value)
     },
     [onChange],
@@ -74,7 +74,9 @@ const FormItem = ({ nodeId, item, onChange }: FormItemProps) => {
           value={normalizedVarValue}
           onChange={handleChange}
           filterVar={filterVar}
-          placeholder={t(($) => $['nodes.assigner.setParameter'], { ns: 'workflow' }) as string}
+          placeholder={
+            t(($) => $['nodes.assigner.setParameter'], { ns: 'workflowLogic' }) as string
+          }
         />
       )}
       {value_type === ValueType.constant && var_type === VarType.string && (
@@ -104,7 +106,7 @@ const FormItem = ({ nodeId, item, onChange }: FormItemProps) => {
           var_type === VarType.arrayNumber ||
           var_type === VarType.arrayObject) && (
           <div
-            className="w-full rounded-[10px] bg-components-input-bg-normal py-2 pr-1 pl-3"
+            className="w-full rounded-[10px] bg-components-input-bg-normal py-2 ps-3 pe-1"
             style={{ height: editorMinHeight }}
           >
             <CodeEditor

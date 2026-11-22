@@ -19,10 +19,16 @@ import Partner from '@/app/components/plugins/base/badges/partner'
 import Verified from '@/app/components/plugins/base/badges/verified'
 import useCheckInstalled from '@/app/components/plugins/install-plugin/hooks/use-check-installed'
 import { PluginCategoryEnum } from '@/app/components/plugins/types'
-import { MARKETPLACE_API_PREFIX } from '@/config'
+import { resolveMarketplaceAssetUrl } from '@/features/marketplace/api'
+import {
+  getPluginDetailPath,
+  getTemplateDetailPath,
+  marketplaceLinks,
+} from '@/features/marketplace/links'
 import Link from '@/next/link'
 import { useRouter } from '@/next/navigation'
 import { fetchPluginInfoFromMarketPlace } from '@/service/plugins'
+import { resolveEmoji } from '@/utils/emoji'
 import {
   rememberMarketplaceSiteReferrer,
   trackMarketplaceSiteEvent,
@@ -30,11 +36,7 @@ import {
 import MarketplaceDetailDialog from '../detail-dialog'
 import TemplateDetailDialog from '../templates/template-detail-dialog'
 import { useOptionalTemplateDetailRoute } from '../templates/use-optional-template-detail-route'
-import {
-  getPluginLinkInMarketplace,
-  getTemplateDetailLinkInMarketplace,
-  getTemplateLinkInMarketplace,
-} from '../utils'
+import { useMarketplaceDetailNavigation } from '../use-detail-navigation'
 import background from './assets/background.webp'
 import {
   EMBEDDED_MOBILE_BANNER_MEDIA,
@@ -45,19 +47,6 @@ import {
 import { buildMarketplaceBannerClickProperties } from './home-trending-track'
 import styles from './home-trending.module.css'
 import { sanitizeMarketplaceHref } from './marketplace-href'
-
-const getMarketplaceAssetURL = (path?: string) => {
-  if (!path) return ''
-  if (/^https?:\/\//.test(path) || path.startsWith('/_next/')) return path
-
-  try {
-    const apiURL = new URL(MARKETPLACE_API_PREFIX)
-    if (path.startsWith('/api/')) return `${apiURL.origin}${path}`
-    return `${MARKETPLACE_API_PREFIX.replace(/\/$/, '')}/${path.replace(/^\//, '')}`
-  } catch {
-    return path
-  }
-}
 
 const getPluginIdentity = (itemId: string) => {
   const [org, name, ...rest] = itemId.split('/')
@@ -147,12 +136,11 @@ const templateFromRecommendCard = (card: BannerRecommendCard): MarketplaceTempla
 const getLocalCardHref = (card: BannerRecommendCard) => {
   if (card.item_type === 'plugin') {
     const identity = getPluginIdentity(card.item_id)
-    if (identity)
-      return `/plugin/${encodeURIComponent(identity.org)}/${encodeURIComponent(identity.name)}`
+    if (identity) return getPluginDetailPath(identity)
   }
 
   if (card.item_type === 'template')
-    return getTemplateDetailLinkInMarketplace({
+    return getTemplateDetailPath({
       id: card.item_id,
       publisher_unique_handle: card.creator || 'template',
     })
@@ -206,7 +194,7 @@ function TrendingCopy({
   banner: BannerRecommend
   isMarketplacePlatform: boolean
 }) {
-  const { t } = useTranslation('plugin')
+  const { t } = useTranslation(['plugin'])
   const heading = banner.content.heading || t(($) => $['marketplace.home.trendingTitle'])
   const description =
     banner.content.description ||
@@ -265,8 +253,8 @@ function trackRecommendCardClick(
 }
 
 function RecommendCardFace({ card }: { card: BannerRecommendCard }) {
-  const { t } = useTranslation('plugin')
-  const iconURL = getMarketplaceAssetURL(card.icon_url)
+  const { t } = useTranslation(['plugin'])
+  const iconURL = resolveMarketplaceAssetUrl(card.icon_url)
   const creator = getCardCreator(card)
   const isPartner = card.badges?.includes('partner')
   const isVerified = card.badges?.includes('verified')
@@ -292,7 +280,7 @@ function RecommendCardFace({ card }: { card: BannerRecommendCard }) {
             className="size-full object-contain object-center"
           />
         ) : card.icon ? (
-          <span className="text-xl leading-none">{card.icon}</span>
+          <span className="text-xl leading-none">{resolveEmoji(card.icon)}</span>
         ) : (
           <span aria-hidden="true" className="i-ri-image-line size-5 text-text-quaternary" />
         )}
@@ -329,7 +317,26 @@ function RecommendCardFace({ card }: { card: BannerRecommendCard }) {
   )
 }
 
-function EmbeddedRecommendPluginCard({
+function EmbeddedRecommendPluginCard(props: Parameters<typeof CloudRecommendPluginCard>[0]) {
+  const navigation = useMarketplaceDetailNavigation()
+  const href = navigation.pluginHref(props.initialPlugin)
+  if (!href) return <CloudRecommendPluginCard {...props} />
+
+  return (
+    <Link
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={props.card.display_name}
+      className={recommendCardClassName}
+      onClick={() => trackRecommendCardClick(props.banner, props.card, props.page, href)}
+    >
+      <RecommendCardFace card={props.card} />
+    </Link>
+  )
+}
+
+function CloudRecommendPluginCard({
   banner,
   card,
   initialPlugin,
@@ -347,7 +354,7 @@ function EmbeddedRecommendPluginCard({
     pluginIds: [plugin.plugin_id],
     enabled: open,
   })
-  const href = getPluginLinkInMarketplace({
+  const href = marketplaceLinks.plugin({
     org: plugin.org,
     name: plugin.name,
     type: 'plugin',
@@ -358,7 +365,7 @@ function EmbeddedRecommendPluginCard({
       <button
         type="button"
         aria-label={card.display_name}
-        className={cn(recommendCardClassName, 'cursor-pointer border-0 text-left')}
+        className={cn(recommendCardClassName, 'cursor-pointer border-0 text-start')}
         onClick={() => {
           trackRecommendCardClick(banner, card, page, href)
           setOpen(true)
@@ -390,7 +397,26 @@ function EmbeddedRecommendPluginCard({
   )
 }
 
-function EmbeddedRecommendTemplateCard({
+function EmbeddedRecommendTemplateCard(props: Parameters<typeof CloudRecommendTemplateCard>[0]) {
+  const navigation = useMarketplaceDetailNavigation()
+  const href = navigation.templateHref(props.template)
+  if (!href) return <CloudRecommendTemplateCard {...props} />
+
+  return (
+    <Link
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={props.card.display_name}
+      className={recommendCardClassName}
+      onClick={() => trackRecommendCardClick(props.banner, props.card, props.page, href)}
+    >
+      <RecommendCardFace card={props.card} />
+    </Link>
+  )
+}
+
+function CloudRecommendTemplateCard({
   banner,
   card,
   template,
@@ -404,14 +430,14 @@ function EmbeddedRecommendTemplateCard({
   const [open, setOpen] = useState(false)
   const router = useRouter()
   const templateDetailRoute = useOptionalTemplateDetailRoute()
-  const href = getTemplateLinkInMarketplace(template)
+  const href = marketplaceLinks.template(template)
 
   return (
     <>
       <button
         type="button"
         aria-label={card.display_name}
-        className={cn(recommendCardClassName, 'cursor-pointer border-0 text-left')}
+        className={cn(recommendCardClassName, 'cursor-pointer border-0 text-start')}
         onClick={() => {
           trackRecommendCardClick(banner, card, page, href)
           if (templateDetailRoute) templateDetailRoute.open(template)
@@ -528,7 +554,7 @@ function TrendingRecommendationSlide({
           aria-hidden
           className={cn(
             styles.recommendBackdrop,
-            'absolute top-[-173px] left-[-990px] h-[1201px] w-[2135px] max-w-none opacity-80',
+            'absolute inset-s-[-990px] top-[-173px] h-[1201px] w-[2135px] max-w-none opacity-80',
           )}
         />
         <div
@@ -564,11 +590,11 @@ function BlogBannerSlide({
   isMarketplacePlatform: boolean
   page: MarketplaceBannerPage
 }) {
-  const { t } = useTranslation('plugin')
+  const { t } = useTranslation(['plugin'])
   const href = sanitizeMarketplaceHref(banner.content.link)
   if (!href) return null
   const opensInNewTab = /^https?:\/\//.test(href)
-  const coverSrc = getMarketplaceAssetURL(banner.content.cover_image)
+  const coverSrc = resolveMarketplaceAssetUrl(banner.content.cover_image)
 
   return (
     <Link
@@ -683,9 +709,9 @@ function ImageBannerSlide({
   const href = sanitizeMarketplaceHref(banner.content.link)
   if (!href) return null
   const resolved = resolveEventAdBannerImageSrcs({
-    desktop: getMarketplaceAssetURL(banner.content.images.desktop),
-    tablet: getMarketplaceAssetURL(banner.content.images.tablet) || undefined,
-    mobile: getMarketplaceAssetURL(banner.content.images.mobile) || undefined,
+    desktop: resolveMarketplaceAssetUrl(banner.content.images.desktop),
+    tablet: resolveMarketplaceAssetUrl(banner.content.images.tablet) || undefined,
+    mobile: resolveMarketplaceAssetUrl(banner.content.images.mobile) || undefined,
   })
 
   return (

@@ -2,6 +2,7 @@ import type { TriggerSubscriptionBuilder } from '@/app/components/workflow/block
 import { Button } from '@langgenius/dify-ui/button'
 import { cn } from '@langgenius/dify-ui/cn'
 import { IconButton } from '@langgenius/dify-ui/icon-button'
+import { Infotip, InfotipContent, InfotipTrigger } from '@langgenius/dify-ui/infotip'
 import {
   Select,
   SelectContent,
@@ -14,7 +15,6 @@ import { useBoolean } from 'ahooks'
 import { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import Badge from '@/app/components/base/badge'
-import { Infotip } from '@/app/components/base/infotip'
 import { toast } from '@/app/notifications'
 import { openOAuthPopup } from '@/hooks/use-oauth'
 import {
@@ -50,7 +50,7 @@ export const CreateSubscriptionButton = ({
   buttonType = CreateButtonType.FULL_BUTTON,
   shape = 'square',
 }: Props) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['plugin', 'pluginTrigger'])
   const { subscriptions } = useSubscriptionList()
   const subscriptionCount = subscriptions?.length || 0
   const [selectedCreateInfo, setSelectedCreateInfo] = useState<{
@@ -95,6 +95,28 @@ export const CreateSubscriptionButton = ({
     }
   }, [t])
 
+  const methodDescriptionMap = {
+    [SupportedCreationMethods.OAUTH]: t(
+      ($) => $['subscription.addType.options.oauth.description'],
+      {
+        ns: 'pluginTrigger',
+      },
+    ),
+    [SupportedCreationMethods.APIKEY]: t(
+      ($) => $['subscription.addType.options.apikey.description'],
+      {
+        ns: 'pluginTrigger',
+      },
+    ),
+    [SupportedCreationMethods.MANUAL]: t(
+      ($) => $['subscription.addType.options.manual.description'],
+      {
+        ns: 'pluginTrigger',
+      },
+    ),
+    [DEFAULT_METHOD]: '',
+  }
+
   const onClickClientSettings = useCallback(
     (e: React.MouseEvent<HTMLDivElement | HTMLButtonElement>) => {
       e.stopPropagation()
@@ -126,7 +148,7 @@ export const CreateSubscriptionButton = ({
         value: SupportedCreationMethods.OAUTH,
         label: t(($) => $['subscription.addType.options.oauth.title'], { ns: 'pluginTrigger' }),
         tag: !showCustomBadge ? null : (
-          <Badge className="mr-0.5 ml-1">{t(($) => $['auth.custom'], { ns: 'plugin' })}</Badge>
+          <Badge className="ms-1 me-0.5">{t(($) => $['auth.custom'], { ns: 'plugin' })}</Badge>
         ),
         extra: (
           <Tooltip>
@@ -162,13 +184,19 @@ export const CreateSubscriptionButton = ({
           ns: 'pluginTrigger',
         }),
         extra: (
-          <Infotip
-            aria-label={t(($) => $['subscription.addType.options.manual.tip'], {
-              ns: 'pluginTrigger',
-            })}
-            className="size-3.5"
-          >
-            {t(($) => $['subscription.addType.options.manual.tip'], { ns: 'pluginTrigger' })}
+          <Infotip>
+            <InfotipTrigger
+              aria-label={t(($) => $['subscription.addType.options.manual.description'], {
+                ns: 'pluginTrigger',
+              })}
+            />
+            <InfotipContent
+              aria-label={t(($) => $['subscription.addType.options.manual.description'], {
+                ns: 'pluginTrigger',
+              })}
+            >
+              {t(($) => $['subscription.addType.options.manual.tip'], { ns: 'pluginTrigger' })}
+            </InfotipContent>
           </Infotip>
         ),
         show: supportedMethods.includes(SupportedCreationMethods.MANUAL),
@@ -278,18 +306,18 @@ export const CreateSubscriptionButton = ({
               onClick={onClickCreate}
             >
               <div className="flex flex-1 items-center justify-center">
-                <span aria-hidden className="mr-2 i-ri-add-line size-4" />
+                <span aria-hidden className="me-2 i-ri-add-line size-4" />
                 {buttonTextMap[methodType!]}
                 {methodType === SupportedCreationMethods.OAUTH &&
                   oauthConfig?.custom_enabled &&
                   oauthConfig?.custom_configured && (
-                    <Badge className="mr-0.5 ml-1 border-text-primary-on-surface bg-components-badge-bg-dimm text-text-primary-on-surface">
+                    <Badge className="ms-1 me-0.5 border-text-primary-on-surface bg-components-badge-bg-dimm text-text-primary-on-surface">
                       {t(($) => $['auth.custom'], { ns: 'plugin' })}
                     </Badge>
                   )}
               </div>
               {methodType === SupportedCreationMethods.OAUTH && (
-                <div className="ml-auto flex items-center">
+                <div className="ms-auto flex items-center">
                   <div className="h-4 w-px bg-text-primary-on-surface opacity-15" />
                   <Tooltip>
                     <TooltipTrigger
@@ -322,7 +350,7 @@ export const CreateSubscriptionButton = ({
                     disabled={subscriptionCount >= MAX_COUNT}
                     focusableWhenDisabled
                     className={cn(
-                      'float-right',
+                      'float-end',
                       subscriptionCount >= MAX_COUNT &&
                         shape === 'square' &&
                         'data-disabled:hover:bg-state-base-hover',
@@ -336,21 +364,15 @@ export const CreateSubscriptionButton = ({
               <TooltipContent>
                 {subscriptionCount >= MAX_COUNT
                   ? t(($) => $['subscription.maxCount'], { ns: 'pluginTrigger', num: MAX_COUNT })
-                  : t(
-                      ($) =>
-                        $[
-                          `subscription.addType.options.${methodType!.toLowerCase() as Lowercase<SupportedCreationMethods>}.description`
-                        ],
-                      { ns: 'pluginTrigger' },
-                    )}
+                  : methodDescriptionMap[methodType!]}
               </TooltipContent>
             </Tooltip>
           )}
         </SelectTrigger>
-        <SelectContent placement="bottom-start" sideOffset={4}>
+        <SelectContent>
           {visibleOptions.map((option) => (
             <SelectItem key={option.value} value={option.value}>
-              <div className="mr-8 flex grow items-center gap-1 truncate px-1">
+              <div className="me-8 flex grow items-center gap-1 truncate px-1">
                 {option.label}
                 {option.tag}
               </div>

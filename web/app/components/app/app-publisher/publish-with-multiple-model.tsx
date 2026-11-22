@@ -5,15 +5,9 @@ import type {
 import type { FC } from 'react'
 import type { ModelAndParameter } from '../configuration/debug/types'
 import { Button } from '@langgenius/dify-ui/button'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@langgenius/dify-ui/dropdown-menu'
+import { Menu, MenuContent, MenuItem, MenuTrigger } from '@langgenius/dify-ui/menu'
 import { RiArrowDownSLine } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
-import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ModelTypeEnum } from '@/app/components/header/account-setting/model-provider-page/declarations'
 import { useLanguage } from '@/app/components/header/account-setting/model-provider-page/hooks'
@@ -31,7 +25,7 @@ const PublishWithMultipleModel: FC<PublishWithMultipleModelProps> = ({
   multipleModelConfigs,
   onSelect,
 }) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['appDebug'])
   const language = useLanguage()
   const { data: textGenerationModelList = [] } = useQuery(
     consoleQuery.workspaces.current.models.modelTypes.byModelType.get.queryOptions({
@@ -39,7 +33,6 @@ const PublishWithMultipleModel: FC<PublishWithMultipleModelProps> = ({
       select: (response) => response.data,
     }),
   )
-  const [open, setOpen] = useState(false)
 
   const validModelConfigs: (ModelAndParameter & {
     modelItem: ProviderModelWithStatusEntity
@@ -68,8 +61,8 @@ const PublishWithMultipleModel: FC<PublishWithMultipleModelProps> = ({
   const triggerDisabled = disabled || !validModelConfigs.length
 
   return (
-    <DropdownMenu open={open} onOpenChange={setOpen}>
-      <DropdownMenuTrigger
+    <Menu>
+      <MenuTrigger
         disabled={triggerDisabled}
         render={<Button variant="primary" disabled={triggerDisabled} className="w-full" />}
       >
@@ -77,25 +70,25 @@ const PublishWithMultipleModel: FC<PublishWithMultipleModelProps> = ({
           {t(($) => $['operation.applyConfig'], { ns: 'appDebug' })}
           <RiArrowDownSLine className="size-3" />
         </>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent placement="bottom-end" sideOffset={4} className="w-[288px] p-1">
+      </MenuTrigger>
+      <MenuContent className="w-[288px]">
         <div className="flex h-5.5 items-center px-3 text-xs font-medium text-text-tertiary">
           {t(($) => $.publishAs, { ns: 'appDebug' })}
         </div>
         {validModelConfigs.map((item, index) => (
-          <DropdownMenuItem key={item.id} className="gap-0 px-3" onClick={() => onSelect(item)}>
+          <MenuItem key={item.id} className="gap-0 px-3" onClick={() => onSelect(item)}>
             <span className="min-w-4.5 italic">#{index + 1}</span>
-            <ModelIcon modelName={item.model} provider={item.providerItem} className="ml-2" />
+            <ModelIcon modelName={item.model} provider={item.providerItem} className="ms-2" />
             <div
-              className="ml-1 truncate text-text-secondary"
+              className="ms-1 truncate text-text-secondary"
               title={renderI18nObject(item.modelItem.label, language)}
             >
               {renderI18nObject(item.modelItem.label, language)}
             </div>
-          </DropdownMenuItem>
+          </MenuItem>
         ))}
-      </DropdownMenuContent>
-    </DropdownMenu>
+      </MenuContent>
+    </Menu>
   )
 }
 

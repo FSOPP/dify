@@ -27,7 +27,7 @@ function SocialIcon({ platform }: { platform: CreatorSocialPlatform }) {
 }
 
 export default function CreatorSidebar({ profile }: CreatorSidebarProps) {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['plugin'])
   const isOrganization = profile.kind === 'organization'
   const isPartner = profile.badges.includes('partner')
   const isVerified = profile.badges.includes('verified')
@@ -40,7 +40,7 @@ export default function CreatorSidebar({ profile }: CreatorSidebarProps) {
         isOrganization={isOrganization}
         size={100}
         className={cn(
-          'absolute -top-12 -left-2 z-10 !size-20 border-[1.5px] border-components-panel-bg bg-background-default-dodge shadow-xs md:-top-[68px] md:!size-[100px]',
+          'absolute -inset-s-2 -top-12 z-10 !size-20 border-[1.5px] border-components-panel-bg bg-background-default-dodge shadow-xs md:-top-[68px] md:!size-[100px]',
           isOrganization && 'rounded-[10px]',
         )}
       />

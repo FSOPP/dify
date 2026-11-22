@@ -31,7 +31,7 @@ const DebugModelParameterTrigger: FC<DebugModelParameterTriggerProps> = ({
   className,
   ...triggerProps
 }) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['modelProvider'])
   const { currentProvider, currentModel } = useTextGenerationCurrentProviderAndModelAndModelList({
     provider: modelAndParameter.provider,
     model: modelAndParameter.model,
@@ -58,7 +58,7 @@ const DebugModelParameterTrigger: FC<DebugModelParameterTriggerProps> = ({
   const isActive = status === 'active'
   const statusTooltipLabel =
     !isEmpty && !isActive && statusLabelKey
-      ? t(($) => $[statusTooltipKey || statusLabelKey], { ns: 'common' })
+      ? t(($) => $[statusTooltipKey || statusLabelKey], { ns: 'modelProvider' })
       : undefined
 
   return (
@@ -77,13 +77,13 @@ const DebugModelParameterTrigger: FC<DebugModelParameterTriggerProps> = ({
           >
             {iconProvider && !isEmpty && (
               <ModelIcon
-                className="mr-1 size-4!"
+                className="me-1 size-4!"
                 provider={iconProvider}
                 modelName={currentModel?.model || modelAndParameter.model}
               />
             )}
             {(!iconProvider || isEmpty) && (
-              <span className="mr-1 flex size-4 items-center justify-center rounded-sm">
+              <span className="me-1 flex size-4 items-center justify-center rounded-sm">
                 <span
                   aria-hidden
                   className="i-custom-vender-line-shapes-cube-outline size-4 text-text-accent"
@@ -91,16 +91,16 @@ const DebugModelParameterTrigger: FC<DebugModelParameterTriggerProps> = ({
               </span>
             )}
             {currentModel && (
-              <ModelName className="mr-0.5 text-text-secondary" modelItem={currentModel} />
+              <ModelName className="me-0.5 text-text-secondary" modelItem={currentModel} />
             )}
             {!currentModel && !isEmpty && (
-              <span className="mr-0.5 truncate text-[13px] font-medium text-text-secondary">
+              <span className="me-0.5 truncate text-[13px] font-medium text-text-secondary">
                 {modelAndParameter.model}
               </span>
             )}
             {isEmpty && (
-              <span className="mr-0.5 truncate text-[13px] font-medium text-text-accent">
-                {t(($) => $['modelProvider.selectModel'], { ns: 'common' })}
+              <span className="me-0.5 truncate text-[13px] font-medium text-text-accent">
+                {t(($) => $['modelProvider.selectModel'], { ns: 'modelProvider' })}
               </span>
             )}
             <span

@@ -1,13 +1,13 @@
-import type { FC } from 'react'
-import { Dialog, DialogContent } from '@langgenius/dify-ui/dialog'
+import type { HotkeyRegistrationHandle } from '@tanstack/react-hotkeys'
+import { Dialog, DialogBackdrop, DialogPopup, DialogPortal } from '@langgenius/dify-ui/dialog'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@langgenius/dify-ui/tooltip'
-import { useHotkey } from '@tanstack/react-hotkeys'
+import { getHotkeyManager } from '@tanstack/react-hotkeys'
 import { noop } from 'es-toolkit/function'
 import * as React from 'react'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useEffectEvent, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from '@/app/notifications'
-import { downloadUrl } from '@/utils/download'
+import { downloadBlob } from '@/utils/download'
 
 type ImagePreviewProps = {
   url: string
@@ -50,8 +50,9 @@ const fetchImageAsPng = async (url: string): Promise<Blob> => {
   }
 }
 
-const ImagePreview: FC<ImagePreviewProps> = ({ url, title, onCancel, onPrev, onNext }) => {
-  const { t } = useTranslation()
+function ImagePreviewContent({ url, title, onCancel, onPrev, onNext }: ImagePreviewProps) {
+  const previewRef = useRef<HTMLDivElement>(null)
+  const { t } = useTranslation(['common', 'workflow'])
   const [scale, setScale] = useState(1)
   const [position, setPosition] = useState({ x: 0, y: 0 })
   const [isDragging, setIsDragging] = useState(false)
@@ -63,22 +64,39 @@ const ImagePreview: FC<ImagePreviewProps> = ({ url, title, onCancel, onPrev, onN
     // Open in a new window, considering the case when the page is inside an iframe
     if (url.startsWith('http') || url.startsWith('/')) {
       window.open(url, '_blank')
-    } else if (url.startsWith('data:image')) {
+    } else if (url.startsWith('data:image') || isBase64(url)) {
       // Base64 image
       const win = window.open()
-      win?.document.write(`<img src="${url}" alt="${title}" />`)
+      if (win) {
+        const image = win.document.createElement('img')
+        image.src = isBase64(url) ? `data:image/png;base64,${url}` : url
+        image.alt = title
+        win.document.body.appendChild(image)
+      }
     } else {
       toast.error(`Unable to open image: ${url}`)
     }
   }
 
-  const downloadImage = () => {
-    // Open in a new window, considering the case when the page is inside an iframe
-    if (url.startsWith('http') || url.startsWith('/') || url.startsWith('data:image')) {
-      downloadUrl({ url, fileName: title, target: '_blank' })
-      return
+  const downloadImage = async () => {
+    try {
+      const response = await fetch(isBase64(url) ? `data:image/png;base64,${url}` : url)
+      if (!response.ok) throw new Error('Unable to load image')
+      const data = await response.blob()
+      const extensions: Record<string, string> = {
+        'image/png': 'png',
+        'image/jpeg': 'jpg',
+        'image/gif': 'gif',
+        'image/webp': 'webp',
+        'image/avif': 'avif',
+        'image/svg+xml': 'svg',
+      }
+      const extension = extensions[data.type]
+      const fileName = title.trim() || (extension ? `image.${extension}` : 'image')
+      downloadBlob({ data, fileName })
+    } catch {
+      toast.error(t(($) => $['operation.downloadFailed'], { ns: 'common' }))
     }
-    toast.error(`Unable to open image: ${url}`)
   }
 
   const zoomIn = () => {
@@ -148,8 +166,9 @@ const ImagePreview: FC<ImagePreviewProps> = ({ url, title, onCancel, onPrev, onN
         const containerRect = imgRef.current?.parentElement?.getBoundingClientRect()
 
         if (imgRect && containerRect) {
-          const maxX = (imgRect.width * scale - containerRect.width) / 2
-          const maxY = (imgRect.height * scale - containerRect.height) / 2
+          // The image rectangle already includes its scale; position uses viewport pixels.
+          const maxX = Math.max(0, (imgRect.width - containerRect.width) / 2)
+          const maxY = Math.max(0, (imgRect.height - containerRect.height) / 2)
 
           setPosition({
             x: Math.max(-maxX, Math.min(maxX, deltaX)),
@@ -172,10 +191,46 @@ const ImagePreview: FC<ImagePreviewProps> = ({ url, title, onCancel, onPrev, onN
     }
   }, [handleMouseUp])
 
-  useHotkey('ArrowUp', zoomIn)
-  useHotkey('ArrowDown', zoomOut)
-  useHotkey('ArrowLeft', onPrev || noop)
-  useHotkey('ArrowRight', onNext || noop)
+  const previousHotkeyRef = useRef<HotkeyRegistrationHandle | null>(null)
+  const nextHotkeyRef = useRef<HotkeyRegistrationHandle | null>(null)
+  const handleZoomIn = useEffectEvent(zoomIn)
+  const handleZoomOut = useEffectEvent(zoomOut)
+  const handlePrevious = useEffectEvent(() => onPrev?.())
+  const handleNext = useEffectEvent(() => onNext?.())
+
+  useEffect(() => {
+    const target = previewRef.current
+    if (!target) return
+    // React hotkeys run at document, beyond DialogPopup's arrow propagation boundary.
+    const manager = getHotkeyManager()
+    const zoomInHotkey = manager.register('ArrowUp', () => handleZoomIn(), { target })
+    const zoomOutHotkey = manager.register('ArrowDown', () => handleZoomOut(), { target })
+    const previousHotkey = manager.register('ArrowLeft', () => handlePrevious(), {
+      target,
+      enabled: false,
+      requireReset: true,
+    })
+    const nextHotkey = manager.register('ArrowRight', () => handleNext(), {
+      target,
+      enabled: false,
+      requireReset: true,
+    })
+    previousHotkeyRef.current = previousHotkey
+    nextHotkeyRef.current = nextHotkey
+    return () => {
+      zoomInHotkey.unregister()
+      zoomOutHotkey.unregister()
+      previousHotkey.unregister()
+      nextHotkey.unregister()
+      previousHotkeyRef.current = null
+      nextHotkeyRef.current = null
+    }
+  }, [])
+
+  useEffect(() => {
+    previousHotkeyRef.current?.setOptions({ enabled: !!onPrev })
+    nextHotkeyRef.current?.setOptions({ enabled: !!onNext })
+  }, [onPrev, onNext])
 
   const copyImageLabel = t(($) => $['operation.copyImage'], { ns: 'common' })
   const zoomOutLabel = t(($) => $['operation.zoomOut'], { ns: 'common' })
@@ -185,16 +240,12 @@ const ImagePreview: FC<ImagePreviewProps> = ({ url, title, onCancel, onPrev, onN
   const cancelLabel = t(($) => $['operation.cancel'], { ns: 'common' })
 
   return (
-    <Dialog
-      open
-      onOpenChange={(open) => {
-        if (!open) onCancel()
-      }}
-      disablePointerDismissal
-    >
-      <DialogContent
-        className="image-preview-container inset-0! top-0! left-0! flex h-dvh! max-h-none! w-screen! max-w-none! translate-0! items-center justify-center overflow-hidden! rounded-none! border-none! bg-black/80 p-8! shadow-none!"
-        backdropProps={{ className: 'bg-transparent!' }}
+    <>
+      <DialogBackdrop className="bg-transparent!" />
+      <DialogPopup
+        ref={previewRef}
+        aria-label={title.trim() || t(($) => $['common.preview'], { ns: 'workflow' })}
+        className="image-preview-container fixed inset-0 flex h-dvh w-screen items-center justify-center overflow-hidden bg-black/80 p-8"
       >
         <div
           data-testid="image-preview-container"
@@ -208,11 +259,12 @@ const ImagePreview: FC<ImagePreviewProps> = ({ url, title, onCancel, onPrev, onN
         >
           <img
             ref={imgRef}
+            draggable={false}
             alt={title}
             src={isBase64(url) ? `data:image/png;base64,${url}` : url}
             className="max-h-full max-w-full"
             style={{
-              transform: `scale(${scale}) translate(${position.x}px, ${position.y}px)`,
+              transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`,
               transition: isDragging ? 'none' : 'transform 0.2s ease-in-out',
             }}
             data-testid="image-preview-image"
@@ -224,7 +276,7 @@ const ImagePreview: FC<ImagePreviewProps> = ({ url, title, onCancel, onPrev, onN
               <button
                 type="button"
                 aria-label={copyImageLabel}
-                className="absolute top-6 right-48 flex size-8 cursor-pointer items-center justify-center rounded-lg"
+                className="absolute inset-e-48 top-6 flex size-8 cursor-pointer items-center justify-center rounded-lg"
                 onClick={imageCopy}
               >
                 {isCopied ? (
@@ -243,7 +295,7 @@ const ImagePreview: FC<ImagePreviewProps> = ({ url, title, onCancel, onPrev, onN
               <button
                 type="button"
                 aria-label={zoomOutLabel}
-                className="absolute top-6 right-40 flex size-8 cursor-pointer items-center justify-center rounded-lg"
+                className="absolute inset-e-40 top-6 flex size-8 cursor-pointer items-center justify-center rounded-lg"
                 onClick={zoomOut}
               >
                 <span className="i-ri-zoom-out-line size-4 text-gray-500" aria-hidden="true" />
@@ -258,7 +310,7 @@ const ImagePreview: FC<ImagePreviewProps> = ({ url, title, onCancel, onPrev, onN
               <button
                 type="button"
                 aria-label={zoomInLabel}
-                className="absolute top-6 right-32 flex size-8 cursor-pointer items-center justify-center rounded-lg"
+                className="absolute inset-e-32 top-6 flex size-8 cursor-pointer items-center justify-center rounded-lg"
                 onClick={zoomIn}
               >
                 <span className="i-ri-zoom-in-line size-4 text-gray-500" aria-hidden="true" />
@@ -273,7 +325,7 @@ const ImagePreview: FC<ImagePreviewProps> = ({ url, title, onCancel, onPrev, onN
               <button
                 type="button"
                 aria-label={downloadLabel}
-                className="absolute top-6 right-24 flex size-8 cursor-pointer items-center justify-center rounded-lg"
+                className="absolute inset-e-24 top-6 flex size-8 cursor-pointer items-center justify-center rounded-lg"
                 onClick={downloadImage}
               >
                 <span
@@ -291,7 +343,7 @@ const ImagePreview: FC<ImagePreviewProps> = ({ url, title, onCancel, onPrev, onN
               <button
                 type="button"
                 aria-label={openInNewTabLabel}
-                className="absolute top-6 right-16 flex size-8 cursor-pointer items-center justify-center rounded-lg"
+                className="absolute inset-e-16 top-6 flex size-8 cursor-pointer items-center justify-center rounded-lg"
                 onClick={openInNewTab}
               >
                 <span className="i-ri-add-box-line size-4 text-gray-500" aria-hidden="true" />
@@ -306,7 +358,7 @@ const ImagePreview: FC<ImagePreviewProps> = ({ url, title, onCancel, onPrev, onN
               <button
                 type="button"
                 aria-label={cancelLabel}
-                className="absolute top-6 right-6 flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg bg-white/8 backdrop-blur-[2px]"
+                className="absolute inset-e-6 top-6 flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg bg-white/8 backdrop-blur-[2px]"
                 onClick={onCancel}
               >
                 <span className="i-ri-close-line size-4 text-gray-500" aria-hidden="true" />
@@ -315,7 +367,23 @@ const ImagePreview: FC<ImagePreviewProps> = ({ url, title, onCancel, onPrev, onN
           />
           <TooltipContent>{cancelLabel}</TooltipContent>
         </Tooltip>
-      </DialogContent>
+      </DialogPopup>
+    </>
+  )
+}
+
+function ImagePreview(props: ImagePreviewProps) {
+  return (
+    <Dialog
+      open
+      onOpenChange={(open) => {
+        if (!open) props.onCancel()
+      }}
+      disablePointerDismissal
+    >
+      <DialogPortal>
+        <ImagePreviewContent {...props} />
+      </DialogPortal>
     </Dialog>
   )
 }

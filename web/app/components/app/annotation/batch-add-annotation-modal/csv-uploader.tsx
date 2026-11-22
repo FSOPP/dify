@@ -6,7 +6,6 @@ import { RiDeleteBinLine } from '@remixicon/react'
 import * as React from 'react'
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Csv as CSVIcon } from '@/app/components/base/icons/src/public/files'
 import { toast } from '@/app/notifications'
 
 export type Props = Readonly<{
@@ -15,7 +14,7 @@ export type Props = Readonly<{
 }>
 
 const CSVUploader: FC<Props> = ({ file, updateFile }) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['appAnnotation', 'common', 'datasetCreation'])
   const [dragging, setDragging] = useState(false)
   const dropRef = useRef<HTMLDivElement>(null)
   const dragRef = useRef<HTMLDivElement>(null)
@@ -92,19 +91,19 @@ const CSVUploader: FC<Props> = ({ file, updateFile }) => {
             )}
           >
             <div className="flex w-full items-center justify-center space-x-2">
-              <CSVIcon className="shrink-0" />
+              <span aria-hidden className="i-custom-public-files-csv h-8.5 w-8 shrink-0" />
               <div className="text-text-tertiary">
                 {t(($) => $['batchModal.csvUploadTitle'], { ns: 'appAnnotation' })}
                 <button
                   type="button"
-                  className="inline cursor-pointer border-none bg-transparent p-0 text-left text-text-accent focus-visible:ring-1 focus-visible:ring-components-input-border-active focus-visible:outline-hidden"
+                  className="inline cursor-pointer border-none bg-transparent p-0 text-start text-text-accent focus-visible:ring-1 focus-visible:ring-components-input-border-active focus-visible:outline-hidden"
                   onClick={selectHandle}
                 >
                   {t(($) => $['batchModal.browse'], { ns: 'appAnnotation' })}
                 </button>
               </div>
             </div>
-            {dragging && <div ref={dragRef} className="absolute top-0 left-0 size-full" />}
+            {dragging && <div ref={dragRef} className="absolute inset-s-0 top-0 size-full" />}
           </div>
         )}
         {file && (
@@ -114,8 +113,8 @@ const CSVUploader: FC<Props> = ({ file, updateFile }) => {
               'hover:border-components-panel-bg-blur hover:bg-components-panel-bg-blur',
             )}
           >
-            <CSVIcon className="shrink-0" />
-            <div className="ml-2 flex w-0 grow">
+            <span aria-hidden className="i-custom-public-files-csv h-8.5 w-8 shrink-0" />
+            <div className="ms-2 flex w-0 grow">
               <span className="max-w-[calc(100%-30px)] overflow-hidden text-ellipsis whitespace-nowrap text-text-primary">
                 {file.name.replace(/.csv$/, '')}
               </span>

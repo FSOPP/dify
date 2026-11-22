@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { useDocLink } from '@/context/i18n'
 
 const NoLinkedAppsPanel = () => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['common'])
   const docLink = useDocLink()
 
   return (
@@ -21,7 +21,7 @@ const NoLinkedAppsPanel = () => {
         target="_blank"
         rel="noopener noreferrer"
       >
-        <RiBookOpenLine className="mr-1 size-4 text-text-accent" />
+        <RiBookOpenLine className="me-1 size-4 text-text-accent" />
         {t(($) => $['datasetMenus.viewDoc'], { ns: 'common' })}
       </a>
     </div>

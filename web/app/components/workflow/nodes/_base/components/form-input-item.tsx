@@ -2,11 +2,8 @@
 
 import type { FC } from 'react'
 import type { ResourceVarInputs } from '../types'
-import type {
-  CredentialFormSchema,
-  FormOption,
-  FormTypeEnum,
-} from '@/app/components/header/account-setting/model-provider-page/declarations'
+import type { FormInputSchema } from './form-input-item.helpers'
+import type { FormOption } from '@/app/components/header/account-setting/model-provider-page/declarations'
 import type { Event, Tool } from '@/app/components/tools/types'
 import type { TriggerWithProvider } from '@/app/components/workflow/block-selector/types'
 import type { ToolWithProvider, ValueSelector, Var } from '@/app/components/workflow/types'
@@ -20,20 +17,18 @@ import {
   SelectItemText,
   SelectTrigger,
 } from '@langgenius/dify-ui/select'
-import { useSuspenseQuery } from '@tanstack/react-query'
 import { useEffect, useMemo, useState } from 'react'
 import { CheckboxList } from '@/app/components/base/checkbox-list'
 import { useLanguage } from '@/app/components/header/account-setting/model-provider-page/hooks'
 import { AppSelector } from '@/app/components/plugins/plugin-detail-panel/app-selector'
 import ModelParameterModal from '@/app/components/plugins/plugin-detail-panel/model-selector'
 import { PluginCategoryEnum } from '@/app/components/plugins/types'
+import { ToolDatePicker } from '@/app/components/tools/parameters/tool-date-picker'
+import { ToolDateRangePicker } from '@/app/components/tools/parameters/tool-date-range-picker'
 import VarReferencePicker from '@/app/components/workflow/nodes/_base/components/variable/var-reference-picker'
 import useAvailableVarList from '@/app/components/workflow/nodes/_base/hooks/use-available-var-list'
 import MixedVariableTextInput from '@/app/components/workflow/nodes/tool/components/mixed-variable-text-input'
-import ToolDatePicker from '@/app/components/workflow/nodes/tool/components/tool-date-picker'
-import ToolDateRangePicker from '@/app/components/workflow/nodes/tool/components/tool-date-range-picker'
 import { VarType } from '@/app/components/workflow/types'
-import { userProfileQueryOptions } from '@/features/account-profile/client'
 import { useFetchDynamicOptions } from '@/service/use-plugins'
 import { useTriggerPluginDynamicOptions } from '@/service/use-triggers'
 import { VarKindType } from '../types'
@@ -57,16 +52,16 @@ type Props = Readonly<{
   readOnly: boolean
   labelId?: string
   nodeId: string
-  schema: CredentialFormSchema
+  schema: FormInputSchema
   value: ResourceVarInputs
   onChange: (value: ResourceVarInputs) => void
-  inPanel?: boolean
   currentTool?: Tool | Event
   currentProvider?: ToolWithProvider | TriggerWithProvider
   showManageInputField?: boolean
   onManageInputField?: () => void
   extraParams?: Record<string, unknown>
   providerType?: 'tool' | 'trigger'
+  staticSchema?: boolean
   disableVariableInsertion?: boolean
 }>
 
@@ -92,27 +87,14 @@ const FormInputItem: FC<Props> = ({
   onManageInputField,
   extraParams,
   providerType,
+  staticSchema = false,
   disableVariableInsertion = false,
-  inPanel,
 }) => {
   const language = useLanguage()
-  const { data: userProfile } = useSuspenseQuery({
-    ...userProfileQueryOptions(),
-    select: (data) => data.profile,
-  })
-  const timezone = userProfile.timezone ?? 'UTC'
   const [toolsOptions, setToolsOptions] = useState<FormOption[] | null>(null)
   const [isLoadingToolsOptions, setIsLoadingToolsOptions] = useState(false)
 
-  const formState = getFormInputState(
-    schema as CredentialFormSchema & {
-      _type?: FormTypeEnum
-      multiple?: boolean
-      options?: FormOption[]
-      scope?: string
-    },
-    value[schema.variable],
-  )
+  const formState = getFormInputState(schema, value[schema.variable])
 
   const {
     defaultValue,
@@ -141,7 +123,9 @@ const FormInputItem: FC<Props> = ({
   const { availableVars, availableNodesWithParent } = useAvailableVarList(nodeId, {
     onlyLeafNodeVar: false,
     filterVar: (varPayload: Var) => {
-      return [VarType.string, VarType.number, VarType.secret].includes(varPayload.type)
+      const textVariableTypes: readonly VarType[] = [VarType.string, VarType.number, VarType.secret]
+
+      return textVariableTypes.includes(varPayload.type)
     },
   })
 
@@ -166,7 +150,8 @@ const FormInputItem: FC<Props> = ({
         extra: extraParams,
         credential_id: currentProvider?.credential_id || '',
       },
-      isDynamicSelect &&
+      !staticSchema &&
+        isDynamicSelect &&
         providerType === PluginCategoryEnum.trigger &&
         !!currentTool &&
         !!currentProvider,
@@ -185,10 +170,11 @@ const FormInputItem: FC<Props> = ({
   useEffect(() => {
     const fetchPanelDynamicOptions = async () => {
       if (
+        !staticSchema &&
         isDynamicSelect &&
         currentTool &&
         currentProvider &&
-        (providerType === PluginCategoryEnum.tool || providerType === PluginCategoryEnum.trigger)
+        providerType === PluginCategoryEnum.tool
       ) {
         setIsLoadingToolsOptions(true)
         try {
@@ -205,6 +191,7 @@ const FormInputItem: FC<Props> = ({
 
     fetchPanelDynamicOptions()
   }, [
+    staticSchema,
     isDynamicSelect,
     currentTool?.name,
     currentProvider?.name,
@@ -327,6 +314,7 @@ const FormInputItem: FC<Props> = ({
     <div className={cn('gap-1', !(isShowJSONEditor && isConstant) && 'flex')}>
       {showTypeSwitch && (
         <FormInputTypeSwitch
+          readonly={readOnly}
           value={varInput?.type || VarKindType.constant}
           onChange={handleTypeChange}
         />
@@ -346,6 +334,8 @@ const FormInputItem: FC<Props> = ({
       {isNumber && isConstant && (
         <NumberField
           step="any"
+          min={staticSchema ? schema.min : undefined}
+          max={staticSchema ? schema.max : undefined}
           className="min-w-0 grow"
           value={varInput?.value == null || varInput.value === '' ? null : Number(varInput.value)}
           readOnly={readOnly}
@@ -362,9 +352,9 @@ const FormInputItem: FC<Props> = ({
       {isDate && isConstant && (
         <div className="min-w-0 grow">
           <ToolDatePicker
+            aria-labelledby={labelId}
             value={varInput?.value}
             onChange={handleValueChange}
-            timezone={timezone}
             readOnly={readOnly}
             placeholder={placeholder?.[language] || placeholder?.en_US}
           />
@@ -373,11 +363,10 @@ const FormInputItem: FC<Props> = ({
       {isDateRange && varInput?.type !== VarKindType.variable && (
         <div className="min-w-0 grow">
           <ToolDateRangePicker
+            label={schema.label?.[language] || schema.label?.en_US || variable}
             value={varInput?.value}
             onChange={handleValueChange}
             readOnly={readOnly}
-            timezone={timezone}
-            inPanel={inPanel}
           />
         </div>
       )}
@@ -393,7 +382,11 @@ const FormInputItem: FC<Props> = ({
         />
       )}
       {isBoolean && isConstant && (
-        <FormInputBoolean value={varInput?.value as boolean} onChange={handleValueChange} />
+        <FormInputBoolean
+          readOnly={readOnly}
+          value={varInput?.value as boolean}
+          onChange={handleValueChange}
+        />
       )}
       {isSelect && isConstant && !isMultipleSelect && (
         <Select
@@ -407,7 +400,7 @@ const FormInputItem: FC<Props> = ({
           <SelectContent>
             {staticSelectItems.map((item) => (
               <SelectItem key={item.value} value={item.value}>
-                {item.icon && <img src={item.icon} alt="" className="mr-2 size-4 shrink-0" />}
+                {item.icon && <img src={item.icon} alt="" className="me-2 size-4 shrink-0" />}
                 <SelectItemText>{item.name}</SelectItemText>
                 <SelectItemIndicator />
               </SelectItem>
@@ -438,7 +431,7 @@ const FormInputItem: FC<Props> = ({
           <SelectContent>
             {dynamicSelectItems.map((item) => (
               <SelectItem key={item.value} value={item.value}>
-                {item.icon && <img src={item.icon} alt="" className="mr-2 size-4 shrink-0" />}
+                {item.icon && <img src={item.icon} alt="" className="me-2 size-4 shrink-0" />}
                 <SelectItemText>{item.name}</SelectItemText>
                 <SelectItemIndicator />
               </SelectItem>
@@ -459,6 +452,7 @@ const FormInputItem: FC<Props> = ({
       )}
       {isShowJSONEditor && isConstant && (
         <JsonEditorField
+          readOnly={readOnly}
           value={(varInput?.value as string) || ''}
           onChange={handleValueChange}
           placeholder={
@@ -469,7 +463,6 @@ const FormInputItem: FC<Props> = ({
       {isAppSelector && (
         <AppSelector
           disabled={readOnly}
-          scope={scope || 'all'}
           value={varInput?.value}
           onSelect={handleAppOrModelSelect}
         />

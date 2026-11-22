@@ -12,8 +12,8 @@ import {
   SelectItemText,
   SelectTrigger,
 } from '@langgenius/dify-ui/select'
+import { Separator } from '@langgenius/dify-ui/separator'
 import { useTranslation } from 'react-i18next'
-import Divider from '@/app/components/base/divider'
 import { SearchInput } from '@/app/components/base/search-input'
 import DisplayToggle from '../display-toggle'
 import s from '../style.module.css'
@@ -43,7 +43,7 @@ function MenuBar({
   isCollapsed,
   toggleCollapsed,
 }: MenuBarProps) {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['common', 'datasetDocuments'])
   const selectedStatus = statusList.find((item) => item.value === selectDefaultValue) ?? null
 
   return (
@@ -58,7 +58,7 @@ function MenuBar({
       ) : (
         <span className="size-4 shrink-0" aria-hidden />
       )}
-      <div className="flex-1 pl-5 system-sm-semibold-uppercase text-text-secondary">
+      <div className="flex-1 ps-5 system-sm-semibold-uppercase text-text-secondary">
         {totalText}
       </div>
       <Select<SegmentStatusFilterValue>
@@ -69,7 +69,10 @@ function MenuBar({
           if (nextItem) onChangeStatus(nextItem)
         }}
       >
-        <SelectTrigger className="mr-2 w-25 shrink-0 shadow-none">
+        <SelectTrigger
+          aria-label={t(($) => $['segment.statusFilterLabel'], { ns: 'datasetDocuments' })}
+          className="me-2 w-25 shrink-0 shadow-none"
+        >
           {selectedStatus?.name ?? ''}
         </SelectTrigger>
         <SelectContent className="w-40">
@@ -82,7 +85,7 @@ function MenuBar({
         </SelectContent>
       </Select>
       <SearchInput className="w-52!" value={inputValue} onValueChange={onInputChange} />
-      <Divider type="vertical" className="mx-3 h-3.5" />
+      <Separator orientation="vertical" className="mx-3 h-3.5" />
       <DisplayToggle isCollapsed={isCollapsed} toggleCollapsed={toggleCollapsed} />
     </div>
   )

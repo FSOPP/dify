@@ -37,7 +37,7 @@ const InputItem: FC<Props> = ({
   isSupportFile,
   insertVarTipToLeft,
 }) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['workflowIntegrations'])
 
   const hasValue = !!value
 
@@ -45,7 +45,7 @@ const InputItem: FC<Props> = ({
   const { availableVars, availableNodesWithParent } = useAvailableVarList(nodeId, {
     onlyLeafNodeVar: false,
     filterVar: (varPayload: Var) => {
-      const supportVarTypes = [VarType.string, VarType.number, VarType.secret]
+      const supportVarTypes: VarType[] = [VarType.string, VarType.number, VarType.secret]
       if (isSupportFile) supportVarTypes.push(VarType.file, VarType.arrayFile)
 
       return supportVarTypes.includes(varPayload.type)
@@ -75,12 +75,14 @@ const InputItem: FC<Props> = ({
           nodesOutputVars={availableVars}
           availableNodes={availableNodesWithParent}
           onFocusChange={setIsFocus}
-          placeholder={t(($) => $['nodes.http.insertVarPlaceholder'], { ns: 'workflow' })!}
-          placeholderClassName="leading-[21px]!"
+          placeholder={t(($) => $['nodes.http.insertVarPlaceholder'], {
+            ns: 'workflowIntegrations',
+          })!}
+          placeholderClassName="truncate leading-[21px]!"
           insertVarTipToLeft={insertVarTipToLeft}
         />
       ) : (
-        <div className="h-full w-full pl-0.5 leading-4.5">
+        <div className="h-full w-full ps-0.5 leading-4.5">
           {!hasValue && (
             <div className="text-xs font-normal text-text-quaternary">{placeholder}</div>
           )}
@@ -99,8 +101,10 @@ const InputItem: FC<Props> = ({
               nodesOutputVars={availableVars}
               availableNodes={availableNodesWithParent}
               onFocusChange={setIsFocus}
-              placeholder={t(($) => $['nodes.http.insertVarPlaceholder'], { ns: 'workflow' })!}
-              placeholderClassName="leading-[21px]!"
+              placeholder={t(($) => $['nodes.http.insertVarPlaceholder'], {
+                ns: 'workflowIntegrations',
+              })!}
+              placeholderClassName="truncate leading-[21px]!"
               promptMinHeightClassName="h-full"
               insertVarTipToLeft={insertVarTipToLeft}
             />
@@ -109,7 +113,7 @@ const InputItem: FC<Props> = ({
       )}
       {hasRemove && !isFocus && (
         <RemoveButton
-          className="absolute top-0.5 right-1 hidden group-hover:block"
+          className="absolute inset-e-1 top-0.5 hidden group-hover:block"
           onClick={handleRemove}
         />
       )}

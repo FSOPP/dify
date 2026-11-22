@@ -15,7 +15,7 @@ import useConfig from './use-config'
 const i18nPrefix = 'nodes.loop'
 
 const Panel: FC<NodePanelProps<LoopNodeType>> = ({ id, data }) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['workflowLogic'])
 
   const {
     readOnly,
@@ -41,13 +41,13 @@ const Panel: FC<NodePanelProps<LoopNodeType>> = ({ id, data }) => {
       <div>
         <Field
           title={
-            <div className="pl-3">
-              {t(($) => $['nodes.loop.loopVariables'], { ns: 'workflow' })}
+            <div className="ps-3">
+              {t(($) => $['nodes.loop.loopVariables'], { ns: 'workflowLogic' })}
             </div>
           }
           operations={
             <div
-              className="mr-4 flex size-5 cursor-pointer items-center justify-center"
+              className="me-4 flex size-5 cursor-pointer items-center justify-center"
               onClick={handleAddLoopVariable}
             >
               <RiAddLine className="size-4 text-text-tertiary" />
@@ -66,11 +66,11 @@ const Panel: FC<NodePanelProps<LoopNodeType>> = ({ id, data }) => {
         <Split className="my-2" />
         <Field
           title={
-            <div className="pl-3">
-              {t(($) => $[`${i18nPrefix}.breakCondition`], { ns: 'workflow' })}
+            <div className="ps-3">
+              {t(($) => $[`${i18nPrefix}.breakCondition`], { ns: 'workflowLogic' })}
             </div>
           }
-          tooltip={t(($) => $[`${i18nPrefix}.breakConditionTip`], { ns: 'workflow' })}
+          tooltip={t(($) => $[`${i18nPrefix}.breakConditionTip`], { ns: 'workflowLogic' })}
         >
           <ConditionWrap
             nodeId={id}
@@ -95,14 +95,14 @@ const Panel: FC<NodePanelProps<LoopNodeType>> = ({ id, data }) => {
         <div className="mt-2">
           <Field
             title={
-              <div className="pl-3">
-                {t(($) => $[`${i18nPrefix}.loopMaxCount`], { ns: 'workflow' })}
+              <div className="ps-3">
+                {t(($) => $[`${i18nPrefix}.loopMaxCount`], { ns: 'workflowLogic' })}
               </div>
             }
           >
             <div className="px-3 py-2">
               <InputNumberWithSlider
-                label={t(($) => $[`${i18nPrefix}.loopMaxCount`], { ns: 'workflow' })}
+                label={t(($) => $[`${i18nPrefix}.loopMaxCount`], { ns: 'workflowLogic' })}
                 min={1}
                 max={LOOP_NODE_MAX_COUNT}
                 value={inputs.loop_count}
